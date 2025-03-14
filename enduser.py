@@ -875,10 +875,10 @@ def main():
         print("\nFetching addresses from recent transactions...")
         
         addresses = {
-            'exchanges': fetcher.get_exchange_addresses(10),  # Increased from 5 to 50
-            'defi': fetcher.get_defi_addresses(10),          # Increased from 5 to 50
-            'nft': fetcher.get_nft_addresses(10),            # Increased from 5 to 50
-            'individuals': fetcher.get_individual_addresses(10)  # Increased from 5 to 50
+            'exchanges': fetcher.get_exchange_addresses(50),  # Increased from 5 to 50
+            'defi': fetcher.get_defi_addresses(50),          # Increased from 5 to 50
+            'nft': fetcher.get_nft_addresses(50),            # Increased from 5 to 50
+            'individuals': fetcher.get_individual_addresses(50)  # Increased from 5 to 50
         }
         
         # Check if we got enough addresses
