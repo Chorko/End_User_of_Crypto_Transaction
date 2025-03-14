@@ -200,6 +200,63 @@ class EndUserPredictor:
         self.isolation_forest = None
         self.random_forest = None
         self.scaler = StandardScaler()
+        # Define user categories
+        self.user_categories = {
+            0: "Individual/Retail User",
+            1: "Institutional/Large Investor",
+            2: "Exchange/Protocol Account",
+            3: "DeFi User",
+            4: "NFT Trader/Collector"
+        }
+        
+        # Known DeFi protocol contract addresses
+        self.defi_contracts = {
+            "0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9": "Aave Lending Pool",
+            "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9": "Aave Token",
+            "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984": "Uniswap Token",
+            "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45": "Uniswap Router",
+            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": "WETH",
+            "0x6b175474e89094c44da98b954eedeac495271d0f": "DAI",
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": "USDC",
+            "0xdac17f958d2ee523a2206206994597c13d831ec7": "USDT",
+            "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599": "WBTC",
+            "0x1985365e9f78359a9b6ad760e32412f4a445e862": "REP",
+            "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2": "MKR",
+            "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e": "YFI",
+            "0xba100000625a3754423978a60c9317c58a424e3d": "BAL",
+            "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f": "SNX"
+        }
+        
+        # Known NFT marketplace contract addresses
+        self.nft_contracts = {
+            "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b": "OpenSea",
+            "0x60e4d786628fea6478f785a6d7e704777c86a7c6": "MAYC",
+            "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d": "BAYC",
+            "0x34d85c9cdeb23fa97cb08333b511ac86e1c4e258": "Otherdeed",
+            "0x74312363e45dcaba76c59ec49a7aa8a65a67eed3": "X2Y2",
+            "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb": "CryptoPunks",
+            "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85": "ENS"
+        }
+        
+        # Known exchange addresses
+        self.exchange_addresses = {
+            "0x28c6c06298d514db089934071355e5743bf21d60": "Binance",
+            "0x2910543af39aba0cd09dbb2d50200b3e800a63d2": "Kraken",
+            "0x0d0707963952f2fba59dd06f2b425ace40b492fe": "Gate.io",
+            "0x11111112542d85b3ef69ae05771c2dccff4faa26": "1inch",
+            "0x71660c4005ba85c37ccec55d0c4493e66fe775d3": "Coinbase",
+            "0xdfd5293d8e347dfe59e90efd55b2956a1343963d": "KuCoin",
+            "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be": "Binance Hot Wallet"
+        }
+        
+        # Suspicious patterns
+        self.suspicious_patterns = [
+            "high_velocity_small_amounts",  # Many small transactions in short time
+            "tornado_cash_interaction",     # Interaction with mixers
+            "wash_trading",                 # Trading same assets back and forth
+            "chain_hopping",                # Moving across multiple chains
+            "dormant_reactivation"          # Long dormant account suddenly active
+        ]
         
     def extract_features(self, addresses: List[str]) -> np.ndarray:
         """Extract numerical features for each address"""
@@ -208,8 +265,15 @@ class EndUserPredictor:
             if address in self.transaction_graph:
                 # Node-level features
                 degree = self.transaction_graph.degree(address)
-                in_degree = self.transaction_graph.in_degree(address)
-                out_degree = self.transaction_graph.out_degree(address)
+                
+                # Check if graph is directed before using in_degree and out_degree
+                if hasattr(self.transaction_graph, 'is_directed') and self.transaction_graph.is_directed():
+                    in_degree = self.transaction_graph.in_degree(address)
+                    out_degree = self.transaction_graph.out_degree(address)
+                else:
+                    # For undirected graphs, in_degree = out_degree = degree
+                    in_degree = degree
+                    out_degree = degree
                 
                 # Get cluster information
                 cluster_id = -1
@@ -232,6 +296,248 @@ class EndUserPredictor:
                 
         return np.array(features)
     
+    def categorize_addresses(self, addresses: List[str]) -> List[int]:
+        """
+        Categorize addresses based on transaction patterns and characteristics
+        Returns list of category IDs corresponding to self.user_categories
+        """
+        categories = []
+        features = self.extract_features(addresses)
+        
+        for i, address in enumerate(addresses):
+            if address not in self.transaction_graph:
+                categories.append(0)  # Default to Individual/Retail User
+                continue
+                
+            # Extract basic metrics
+            degree = self.transaction_graph.degree(address)
+            neighbors = list(self.transaction_graph.neighbors(address))
+            
+            # Find address cluster
+            cluster_id = -1
+            for cid, cluster_addrs in self.clusters.items():
+                if address in cluster_addrs:
+                    cluster_id = cid
+                    break
+            
+            # Check if address is lower or uppercase (exchanges often use checksum addresses)
+            is_checksum = any(c.isupper() for c in address[2:])
+            
+            # Categorization logic
+            if degree > 100:
+                # High transaction volume indicates exchange or protocol
+                categories.append(2)  # Exchange/Protocol Account
+            elif degree > 50 and cluster_id >= 0 and len(self.clusters.get(cluster_id, [])) > 5:
+                # Significant transaction volume in a large cluster
+                categories.append(1)  # Institutional/Large Investor
+            elif self._is_likely_defi_user(address, neighbors):
+                # Interacts with known DeFi contracts
+                categories.append(3)  # DeFi User
+            elif self._is_likely_nft_trader(address, neighbors):
+                # Interacts with known NFT marketplaces
+                categories.append(4)  # NFT Trader/Collector
+            else:
+                # Default category
+                categories.append(0)  # Individual/Retail User
+                
+        return categories
+    
+    def _is_likely_defi_user(self, address: str, neighbors: List[str]) -> bool:
+        """Determine if address is likely a DeFi user based on its interactions"""
+        # Check if address interacts with DeFi protocols
+        for neighbor in neighbors:
+            if neighbor.lower() in self.defi_contracts:
+                return True
+                
+        # Check for partial matches (smart contract might have different implementations)
+        for neighbor in neighbors:
+            for defi_addr in self.defi_contracts:
+                if neighbor.lower().startswith(defi_addr[:10].lower()):
+                    return True
+        
+        return False
+    
+    def _is_likely_nft_trader(self, address: str, neighbors: List[str]) -> bool:
+        """Determine if address is likely an NFT trader based on its interactions"""
+        # Check if address interacts with NFT marketplaces
+        for neighbor in neighbors:
+            if neighbor.lower() in self.nft_contracts:
+                return True
+                
+        # Check for partial matches
+        for neighbor in neighbors:
+            for nft_addr in self.nft_contracts:
+                if neighbor.lower().startswith(nft_addr[:10].lower()):
+                    return True
+        
+        return False
+    
+    def _is_exchange_account(self, address: str, neighbors: List[str]) -> bool:
+        """Determine if address is likely an exchange account based on interactions"""
+        # Check if address interacts with known exchanges
+        for neighbor in neighbors:
+            if neighbor.lower() in self.exchange_addresses:
+                return True
+                
+        # Check for partial matches
+        for neighbor in neighbors:
+            for exchange_addr in self.exchange_addresses:
+                if neighbor.lower().startswith(exchange_addr[:10].lower()):
+                    return True
+        
+        return False
+    
+    def detect_investment_destinations(self, address: str) -> Dict[str, float]:
+        """
+        Identify where the user has invested their crypto
+        
+        Returns:
+            Dict[str, float]: Dictionary mapping investment destinations to 
+                              estimated portion of portfolio (0-1 scale)
+        """
+        if address not in self.transaction_graph:
+            return {}
+            
+        neighbors = list(self.transaction_graph.neighbors(address))
+        investment_map = {}
+        total_weight = 0
+        
+        # Check DeFi investments
+        for neighbor in neighbors:
+            neighbor_lower = neighbor.lower()
+            
+            # Check DeFi protocols
+            for contract, protocol_name in self.defi_contracts.items():
+                if neighbor_lower.startswith(contract[:10].lower()):
+                    weight = 1.0 / len(neighbors)  # Simplified weighting
+                    if protocol_name in investment_map:
+                        investment_map[protocol_name] += weight
+                    else:
+                        investment_map[protocol_name] = weight
+                    total_weight += weight
+                    break
+                    
+            # Check NFT investments
+            for contract, marketplace_name in self.nft_contracts.items():
+                if neighbor_lower.startswith(contract[:10].lower()):
+                    weight = 1.0 / len(neighbors)
+                    if marketplace_name in investment_map:
+                        investment_map[marketplace_name] += weight
+                    else:
+                        investment_map[marketplace_name] = weight
+                    total_weight += weight
+                    break
+                    
+            # Check exchange deposits
+            for exchange_addr, exchange_name in self.exchange_addresses.items():
+                if neighbor_lower.startswith(exchange_addr[:10].lower()):
+                    weight = 1.0 / len(neighbors)
+                    if exchange_name in investment_map:
+                        investment_map[exchange_name] += weight
+                    else:
+                        investment_map[exchange_name] = weight
+                    total_weight += weight
+                    break
+        
+        # Normalize weights
+        if total_weight > 0:
+            for dest in investment_map:
+                investment_map[dest] /= total_weight
+                
+        # Sort by weight descending
+        return dict(sorted(investment_map.items(), key=lambda x: x[1], reverse=True))
+    
+    def detect_suspicious_activities(self, address: str) -> List[Dict[str, any]]:
+        """
+        Detect potential suspicious activities for the given address
+        
+        Returns:
+            List[Dict[str, any]]: List of suspicious patterns detected with confidence scores
+        """
+        if address not in self.transaction_graph:
+            return []
+            
+        suspicious_activities = []
+        neighbors = list(self.transaction_graph.neighbors(address))
+        
+        # Check for high velocity of transactions
+        if self.transaction_graph.degree(address) > 50:
+            suspicious_activities.append({
+                "pattern": "high_velocity_small_amounts",
+                "confidence": min(1.0, self.transaction_graph.degree(address) / 200),
+                "description": "High volume of transactions detected, possibly automated trading or suspicious activity"
+            })
+            
+        # Check for interaction with known mixing services
+        tornado_cash_addresses = [
+            "0x722122df12d4e14e13ac3b6895a86e84145b6967",
+            "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b",
+            "0x910cbd523d972eb0a6f4cae4618ad62622b39dbf",
+            "0xa160cdab225685da1d56aa342ad8841c3b53f291"
+        ]
+        
+        for neighbor in neighbors:
+            if any(neighbor.lower().startswith(mixer[:10].lower()) for mixer in tornado_cash_addresses):
+                suspicious_activities.append({
+                    "pattern": "tornado_cash_interaction",
+                    "confidence": 0.9,
+                    "description": "Interaction with privacy mixer detected, possibly attempting to obscure transaction history"
+                })
+                break
+                
+        # Check for potential wash trading (same assets back and forth)
+        # This is a simplified heuristic that can be improved with temporal data
+        if any(address in self.transaction_graph.neighbors(n) for n in neighbors):
+            suspicious_activities.append({
+                "pattern": "wash_trading",
+                "confidence": 0.7,
+                "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+            })
+            
+        # Dormant reactivation would require historical data, this is a placeholder
+        # In a real implementation, you would check the timestamp of transactions
+        
+        return suspicious_activities
+    
+    def identify_end_user(self, address: str) -> Dict[str, any]:
+        """
+        Identify detailed information about the end user of this address
+        
+        Returns:
+            Dict[str, any]: Detailed user profile including category, investments,
+                           suspicious activities, and transaction patterns
+        """
+        if address not in self.transaction_graph:
+            return {"address": address, "error": "Address not found in transaction graph"}
+            
+        # Get basic user classification
+        user_profile = self.predict_user_type(address)
+        
+        # Add investment destinations
+        user_profile["investments"] = self.detect_investment_destinations(address)
+        
+        # Add suspicious activities
+        user_profile["suspicious_activities"] = self.detect_suspicious_activities(address)
+        
+        # Add transaction patterns
+        neighbors = list(self.transaction_graph.neighbors(address))
+        user_profile["transaction_patterns"] = {
+            "total_transactions": self.transaction_graph.degree(address),
+            "unique_counterparties": len(neighbors),
+            "cluster_id": next((cid for cid, addrs in self.clusters.items() if address in addrs), -1),
+        }
+        
+        # Generate a unique identifier based on behavioral patterns
+        profile_features = [
+            user_profile["user_category"],
+            len(user_profile["investments"]),
+            len(user_profile["suspicious_activities"]),
+            user_profile["transaction_patterns"]["total_transactions"]
+        ]
+        user_profile["user_profile_id"] = hash(tuple(profile_features)) % 10000000
+        
+        return user_profile
+    
     def train_isolation_forest(self, addresses: List[str]):
         """Train Isolation Forest for anomaly detection"""
         features = self.extract_features(addresses)
@@ -244,8 +550,11 @@ class EndUserPredictor:
         )
         self.isolation_forest.fit(features_scaled)
     
-    def train_random_forest(self, addresses: List[str], labels: List[int]):
+    def train_random_forest(self, addresses: List[str]):
         """Train Random Forest for user classification"""
+        # Generate meaningful labels instead of random ones
+        labels = self.categorize_addresses(addresses)
+        
         features = self.extract_features(addresses)
         features_scaled = self.scaler.fit_transform(features)
         
@@ -269,6 +578,7 @@ class EndUserPredictor:
             "address": address,
             "is_anomaly": False,
             "user_category": None,
+            "user_category_name": None,
             "confidence": 0.0
         }
         
@@ -283,6 +593,7 @@ class EndUserPredictor:
             prediction = self.random_forest.predict(features_scaled)[0]
             probabilities = self.random_forest.predict_proba(features_scaled)[0]
             results["user_category"] = prediction
+            results["user_category_name"] = self.user_categories.get(prediction, "Unknown")
             results["confidence"] = max(probabilities)
             
         return results
@@ -374,21 +685,52 @@ def main():
         print("\nInitializing End User Predictor...")
         predictor = EndUserPredictor(clusterer.transaction_graph, clusters)
         
-        # Create synthetic labels for demonstration (in production, you'd need real labeled data)
+        # Use address list from graph
         address_list = list(clusterer.transaction_graph.nodes())
-        synthetic_labels = np.random.randint(0, 3, size=len(address_list))  # 3 user categories
         
         print("\nTraining machine learning models...")
         predictor.train_isolation_forest(address_list)
-        predictor.train_random_forest(address_list, synthetic_labels)
+        predictor.train_random_forest(address_list)  # No need to pass labels, method generates them
         
         print("\nAnalyzing sample addresses...")
         for address in address_list[:5]:  # Analyze first 5 addresses as example
-            prediction = predictor.predict_user_type(address)
-            print(f"\nAddress: {address}")
-            print(f"Anomaly: {'Yes' if prediction['is_anomaly'] else 'No'}")
-            print(f"User Category: {prediction['user_category']}")
-            print(f"Confidence: {prediction['confidence']:.2f}")
+            # Get detailed user profile
+            user_profile = predictor.identify_end_user(address)
+            
+            # Print detailed information
+            print(f"\n{'='*60}")
+            print(f"ADDRESS: {address}")
+            print(f"{'='*60}")
+            print(f"USER CATEGORY: {user_profile['user_category_name']} (Category {user_profile['user_category']})")
+            print(f"CONFIDENCE: {user_profile['confidence']:.2f}")
+            print(f"PROFILE ID: {user_profile.get('user_profile_id', 'N/A')}")
+            print(f"ANOMALY: {'Yes' if user_profile['is_anomaly'] else 'No'}")
+            
+            # Print investment destinations
+            if user_profile.get('investments'):
+                print("\nINVESTMENT DESTINATIONS:")
+                for destination, weight in user_profile['investments'].items():
+                    print(f"  - {destination}: {weight:.2%}")
+            else:
+                print("\nINVESTMENT DESTINATIONS: None detected")
+                
+            # Print suspicious activities
+            if user_profile.get('suspicious_activities'):
+                print("\nSUSPICIOUS ACTIVITIES:")
+                for activity in user_profile['suspicious_activities']:
+                    print(f"  - {activity['description']} (Confidence: {activity['confidence']:.2f})")
+            else:
+                print("\nSUSPICIOUS ACTIVITIES: None detected")
+                
+            # Print transaction patterns
+            if user_profile.get('transaction_patterns'):
+                print("\nTRANSACTION PATTERNS:")
+                patterns = user_profile['transaction_patterns']
+                print(f"  - Total Transactions: {patterns.get('total_transactions', 'N/A')}")
+                print(f"  - Unique Counterparties: {patterns.get('unique_counterparties', 'N/A')}")
+                print(f"  - Cluster ID: {patterns.get('cluster_id', 'N/A')}")
+            
+            print(f"{'='*60}")
         
     except Exception as e:
         print(f"\nError: {str(e)}")
