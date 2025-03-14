@@ -258,6 +258,16 @@ class EndUserPredictor:
             "dormant_reactivation"          # Long dormant account suddenly active
         ]
         
+        # Cluster explanation map
+        self.cluster_explanations = {
+            -1: "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)",
+            0: "Primary Activity Cluster (High transaction volume with diverse counterparties)",
+            1: "Exchange-Related Cluster (Addresses likely related to exchange activity)",
+            2: "DeFi Activity Cluster (Addresses engaging with DeFi protocols)",
+            3: "NFT Trading Cluster (Addresses involved in NFT marketplace activity)",
+            4: "Mixed Usage Cluster (Addresses with multiple types of activity)"
+        }
+        
     def extract_features(self, addresses: List[str]) -> np.ndarray:
         """Extract numerical features for each address"""
         features = []
@@ -323,11 +333,11 @@ class EndUserPredictor:
             # Check if address is lower or uppercase (exchanges often use checksum addresses)
             is_checksum = any(c.isupper() for c in address[2:])
             
-            # Categorization logic
-            if degree > 100:
+            # Categorization logic with more refined thresholds
+            if self._is_exchange_account(address, neighbors) or degree > 500:
                 # High transaction volume indicates exchange or protocol
                 categories.append(2)  # Exchange/Protocol Account
-            elif degree > 50 and cluster_id >= 0 and len(self.clusters.get(cluster_id, [])) > 5:
+            elif degree > 100 and cluster_id >= 0 and len(self.clusters.get(cluster_id, [])) > 5:
                 # Significant transaction volume in a large cluster
                 categories.append(1)  # Institutional/Large Investor
             elif self._is_likely_defi_user(address, neighbors):
@@ -460,11 +470,12 @@ class EndUserPredictor:
         suspicious_activities = []
         neighbors = list(self.transaction_graph.neighbors(address))
         
-        # Check for high velocity of transactions
-        if self.transaction_graph.degree(address) > 50:
+        # Check for high velocity of transactions - only flag for relatively high volumes
+        degree = self.transaction_graph.degree(address)
+        if degree > 100:  # Increased threshold from 50 to 100
             suspicious_activities.append({
                 "pattern": "high_velocity_small_amounts",
-                "confidence": min(1.0, self.transaction_graph.degree(address) / 200),
+                "confidence": min(0.8, degree / 1000),  # Capped at 0.8, more gradual increase
                 "description": "High volume of transactions detected, possibly automated trading or suspicious activity"
             })
             
@@ -485,12 +496,14 @@ class EndUserPredictor:
                 })
                 break
                 
-        # Check for potential wash trading (same assets back and forth)
-        # This is a simplified heuristic that can be improved with temporal data
-        if any(address in self.transaction_graph.neighbors(n) for n in neighbors):
+        # Check for potential wash trading - now requires bidirectional transactions and at least 3 transactions
+        # This reduces false positives for addresses with just 1-2 transactions
+        bidirectional_neighbors = [n for n in neighbors if address in self.transaction_graph.neighbors(n)]
+        if len(bidirectional_neighbors) > 0 and degree >= 3:
+            confidence = min(0.7, len(bidirectional_neighbors) / len(neighbors) * 0.7)
             suspicious_activities.append({
                 "pattern": "wash_trading",
-                "confidence": 0.7,
+                "confidence": confidence,
                 "description": "Potential wash trading detected, trading with the same addresses repeatedly"
             })
             
@@ -498,6 +511,62 @@ class EndUserPredictor:
         # In a real implementation, you would check the timestamp of transactions
         
         return suspicious_activities
+    
+    def get_cluster_explanation(self, cluster_id: int) -> str:
+        """Get human-readable explanation for a cluster ID"""
+        return self.cluster_explanations.get(cluster_id, f"Cluster {cluster_id} (No specific information available)")
+    
+    def calculate_confidence_adjustment(self, prediction: int, address: str) -> float:
+        """
+        Calculate a confidence adjustment based on the quality of evidence
+        
+        Args:
+            prediction: The predicted category ID
+            address: The Ethereum address
+            
+        Returns:
+            float: A confidence adjustment factor (0.0 to 1.0)
+        """
+        if address not in self.transaction_graph:
+            return 0.3  # Low confidence for addresses not in the graph
+        
+        neighbors = list(self.transaction_graph.neighbors(address))
+        degree = self.transaction_graph.degree(address)
+        
+        # Start with base confidence
+        adjustment = 0.5
+        
+        # Find cluster information
+        cluster_id = -1
+        for cid, cluster_addrs in self.clusters.items():
+            if address in cluster_addrs:
+                cluster_id = cid
+                break
+        
+        # More transactions = stronger evidence
+        if degree > 100:
+            adjustment += 0.2
+        elif degree > 10:
+            adjustment += 0.1
+        elif degree < 3:
+            adjustment -= 0.2  # Very few transactions = low confidence
+            
+        # Being in a cluster increases confidence (except for outliers)
+        if cluster_id >= 0:
+            adjustment += 0.1
+        else:
+            adjustment -= 0.1  # Outliers get reduced confidence
+            
+        # Strong evidence for specific categories
+        if prediction == 2 and self._is_exchange_account(address, neighbors):  # Exchange
+            adjustment += 0.2
+        elif prediction == 3 and self._is_likely_defi_user(address, neighbors):  # DeFi
+            adjustment += 0.2
+        elif prediction == 4 and self._is_likely_nft_trader(address, neighbors):  # NFT
+            adjustment += 0.2
+            
+        # Cap adjustment between 0.3 and 1.0
+        return max(0.3, min(1.0, adjustment))
     
     def identify_end_user(self, address: str) -> Dict[str, any]:
         """
@@ -521,10 +590,19 @@ class EndUserPredictor:
         
         # Add transaction patterns
         neighbors = list(self.transaction_graph.neighbors(address))
+        
+        # Find cluster ID
+        cluster_id = -1
+        for cid, cluster_addrs in self.clusters.items():
+            if address in cluster_addrs:
+                cluster_id = cid
+                break
+                
         user_profile["transaction_patterns"] = {
             "total_transactions": self.transaction_graph.degree(address),
             "unique_counterparties": len(neighbors),
-            "cluster_id": next((cid for cid, addrs in self.clusters.items() if address in addrs), -1),
+            "cluster_id": cluster_id,
+            "cluster_explanation": self.get_cluster_explanation(cluster_id)
         }
         
         # Generate a unique identifier based on behavioral patterns
@@ -592,9 +670,23 @@ class EndUserPredictor:
         if self.random_forest is not None:
             prediction = self.random_forest.predict(features_scaled)[0]
             probabilities = self.random_forest.predict_proba(features_scaled)[0]
+            
+            # Get base confidence from model
+            base_confidence = max(probabilities)
+            
+            # Apply evidence-based adjustment
+            confidence_adjustment = self.calculate_confidence_adjustment(prediction, address)
+            
+            # Final confidence is base * adjustment, capped at 0.95
+            final_confidence = min(0.95, base_confidence * confidence_adjustment)
+            
             results["user_category"] = prediction
             results["user_category_name"] = self.user_categories.get(prediction, "Unknown")
-            results["confidence"] = max(probabilities)
+            results["confidence"] = final_confidence
+            results["confidence_factors"] = {
+                "model_confidence": base_confidence,
+                "evidence_adjustment": confidence_adjustment
+            }
             
         return results
 
@@ -728,7 +820,9 @@ def main():
                 patterns = user_profile['transaction_patterns']
                 print(f"  - Total Transactions: {patterns.get('total_transactions', 'N/A')}")
                 print(f"  - Unique Counterparties: {patterns.get('unique_counterparties', 'N/A')}")
-                print(f"  - Cluster ID: {patterns.get('cluster_id', 'N/A')}")
+                cluster_id = patterns.get('cluster_id', 'N/A')
+                print(f"  - Cluster ID: {cluster_id}")
+                print(f"  - Cluster Info: {patterns.get('cluster_explanation', 'N/A')}")
             
             print(f"{'='*60}")
         
