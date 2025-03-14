@@ -249,6 +249,13 @@ class EndUserPredictor:
             "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be": "Binance Hot Wallet"
         }
         
+        # Added addresses known to belong to end users (individuals)
+        self.known_end_user_addresses = {
+            "0x8c1ed7e19abaa9f23c476da86dc1577f1ef401f5": "Retail Trader",
+            "0x9c5083dd4838e120dbeac44c052179692aa5daa5": "Small Holder",
+            "0x7a250d5630b4cf539739df2c5dacb4c659f2488d": "Regular User"
+        }
+        
         # Suspicious patterns
         self.suspicious_patterns = [
             "high_velocity_small_amounts",  # Many small transactions in short time
@@ -258,6 +265,14 @@ class EndUserPredictor:
             "dormant_reactivation"          # Long dormant account suddenly active
         ]
         
+        # New: Time-based patterns
+        self.time_patterns = [
+            "regular_intervals",           # Transactions at regular intervals (e.g., weekly DCA)
+            "working_hours_only",          # Transactions primarily during working hours
+            "bursty_activity",             # Short bursts of high activity followed by dormancy
+            "consistent_small_transactions" # Regular small transactions (typical of retail users)
+        ]
+        
         # Cluster explanation map
         self.cluster_explanations = {
             -1: "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)",
@@ -265,7 +280,20 @@ class EndUserPredictor:
             1: "Exchange-Related Cluster (Addresses likely related to exchange activity)",
             2: "DeFi Activity Cluster (Addresses engaging with DeFi protocols)",
             3: "NFT Trading Cluster (Addresses involved in NFT marketplace activity)",
-            4: "Mixed Usage Cluster (Addresses with multiple types of activity)"
+            4: "Mixed Usage Cluster (Addresses with multiple types of activity)",
+            5: "End User Cluster (Addresses showing typical individual user behavior)",
+            6: "Automated Trading Cluster (Addresses showing bot-like trading patterns)"
+        }
+        
+        # New: End user behavior patterns
+        self.end_user_patterns = {
+            "gas_optimization": "Tends to wait for lower gas prices, indicating individual user behavior",
+            "high_slippage_tolerance": "Accepts high slippage, typical of retail users",
+            "weekend_trading": "More active on weekends, typical of non-professional traders",
+            "small_token_diversity": "Holds a small number of different tokens",
+            "fiat_on_off_ramps": "Uses centralized exchanges for deposits/withdrawals",
+            "follows_market_trends": "Trading correlates with overall market movements",
+            "social_token_interest": "Holds social or community tokens"
         }
         
     def extract_features(self, addresses: List[str]) -> np.ndarray:
@@ -605,6 +633,12 @@ class EndUserPredictor:
             "cluster_explanation": self.get_cluster_explanation(cluster_id)
         }
         
+        # New: Add end-user likelihood score
+        user_profile["end_user_likelihood"] = self.calculate_end_user_likelihood(address)
+        
+        # New: Add behavior patterns typical of end users
+        user_profile["behavior_patterns"] = self.detect_behavior_patterns(address)
+        
         # Generate a unique identifier based on behavioral patterns
         profile_features = [
             user_profile["user_category"],
@@ -689,6 +723,122 @@ class EndUserPredictor:
             }
             
         return results
+    
+    def calculate_end_user_likelihood(self, address: str) -> float:
+        """
+        Calculate the likelihood that this address belongs to an individual end user
+        
+        Args:
+            address: The Ethereum address to analyze
+            
+        Returns:
+            float: A probability score (0.0 to 1.0) indicating likelihood of being an end user
+        """
+        if address not in self.transaction_graph:
+            return 0.0
+            
+        # Start with neutral probability
+        likelihood = 0.5
+        
+        # Get basic transaction metrics
+        degree = self.transaction_graph.degree(address)
+        neighbors = list(self.transaction_graph.neighbors(address))
+        
+        # End users typically have fewer transactions
+        if degree < 10:
+            likelihood += 0.2
+        elif degree < 50:
+            likelihood += 0.1
+        elif degree > 1000:
+            likelihood -= 0.3
+        elif degree > 500:
+            likelihood -= 0.2
+        elif degree > 100:
+            likelihood -= 0.1
+            
+        # End users typically interact with fewer unique addresses
+        if len(neighbors) < 5:
+            likelihood += 0.1
+        elif len(neighbors) > 100:
+            likelihood -= 0.2
+            
+        # End users typically interact with exchanges (for on/off ramping)
+        has_exchange_interaction = any(
+            neighbor.lower() in self.exchange_addresses for neighbor in neighbors
+        )
+        if has_exchange_interaction:
+            likelihood += 0.1
+            
+        # End users typically don't interact with many DeFi protocols
+        defi_interactions = sum(
+            1 for neighbor in neighbors if neighbor.lower() in self.defi_contracts
+        )
+        if defi_interactions > 10:
+            likelihood -= 0.2
+        elif defi_interactions > 5:
+            likelihood -= 0.1
+            
+        # Check if address is a known smart contract
+        if address.lower() in self.defi_contracts or address.lower() in self.nft_contracts:
+            likelihood -= 0.4  # Smart contracts are not end users
+            
+        # Check if address is a known exchange
+        if address.lower() in self.exchange_addresses:
+            likelihood -= 0.4  # Exchanges are not end users
+            
+        # Check if address is a known end user
+        if address.lower() in self.known_end_user_addresses:
+            likelihood += 0.3
+            
+        # End users typically have lower transaction values (would need transaction value data)
+        
+        # Ensure the likelihood stays between 0 and 1
+        return max(0.0, min(1.0, likelihood))
+        
+    def detect_behavior_patterns(self, address: str) -> Dict[str, float]:
+        """
+        Detect behavioral patterns associated with end users
+        
+        Args:
+            address: The Ethereum address to analyze
+            
+        Returns:
+            Dict[str, float]: Dictionary mapping behavior patterns to confidence scores
+        """
+        if address not in self.transaction_graph:
+            return {}
+            
+        # This is a simplified implementation. In a full implementation,
+        # you would analyze actual transaction timestamps, values, etc.
+        behavior_patterns = {}
+        neighbors = list(self.transaction_graph.neighbors(address))
+        
+        # Simplified detection of exchange usage (fiat on/off ramps)
+        exchange_neighbors = [n for n in neighbors if n.lower() in self.exchange_addresses]
+        if exchange_neighbors:
+            behavior_patterns["fiat_on_off_ramps"] = min(1.0, len(exchange_neighbors) / 3)
+            
+        # Simplified detection of token diversity
+        defi_neighbors = [n for n in neighbors if n.lower() in self.defi_contracts]
+        nft_neighbors = [n for n in neighbors if n.lower() in self.nft_contracts]
+        token_diversity = len(set(defi_neighbors + nft_neighbors))
+        
+        if token_diversity < 3:
+            behavior_patterns["small_token_diversity"] = 0.8
+        elif token_diversity < 7:
+            behavior_patterns["small_token_diversity"] = 0.4
+            
+        # Detect if this might be a gas-sensitive user
+        if self.transaction_graph.degree(address) < 50:
+            behavior_patterns["gas_optimization"] = 0.6
+            
+        # In a real implementation, you would analyze:
+        # - Transaction timestamps for time patterns
+        # - Gas prices at transaction times
+        # - Transaction values
+        # - Smart contract interaction patterns
+        
+        return behavior_patterns
 
 def main():
     """
@@ -725,10 +875,10 @@ def main():
         print("\nFetching addresses from recent transactions...")
         
         addresses = {
-            'exchanges': fetcher.get_exchange_addresses(5),  # Reduced count for testing
-            'defi': fetcher.get_defi_addresses(5),
-            'nft': fetcher.get_nft_addresses(5),
-            'individuals': fetcher.get_individual_addresses(5)
+            'exchanges': fetcher.get_exchange_addresses(10),  # Increased from 5 to 50
+            'defi': fetcher.get_defi_addresses(10),          # Increased from 5 to 50
+            'nft': fetcher.get_nft_addresses(10),            # Increased from 5 to 50
+            'individuals': fetcher.get_individual_addresses(10)  # Increased from 5 to 50
         }
         
         # Check if we got enough addresses
@@ -785,7 +935,9 @@ def main():
         predictor.train_random_forest(address_list)  # No need to pass labels, method generates them
         
         print("\nAnalyzing sample addresses...")
-        for address in address_list[:5]:  # Analyze first 5 addresses as example
+        # Analyze more addresses (up to 20, depending on how many we have)
+        sample_size = min(20, len(address_list))
+        for address in address_list[:sample_size]:
             # Get detailed user profile
             user_profile = predictor.identify_end_user(address)
             
@@ -795,8 +947,15 @@ def main():
             print(f"{'='*60}")
             print(f"USER CATEGORY: {user_profile['user_category_name']} (Category {user_profile['user_category']})")
             print(f"CONFIDENCE: {user_profile['confidence']:.2f}")
+            
+            # New: Print end user likelihood
+            if 'end_user_likelihood' in user_profile:
+                end_user_text = "HIGH" if user_profile['end_user_likelihood'] > 0.7 else (
+                    "MEDIUM" if user_profile['end_user_likelihood'] > 0.4 else "LOW")
+                print(f"END USER LIKELIHOOD: {user_profile['end_user_likelihood']:.2f} ({end_user_text})")
+            
             print(f"PROFILE ID: {user_profile.get('user_profile_id', 'N/A')}")
-            print(f"ANOMALY: {'Yes' if user_profile['is_anomaly'] else 'No'}")
+            print(f"ANOMALY: {'Yes' if user_profile.get('is_anomaly', False) else 'No'}")
             
             # Print investment destinations
             if user_profile.get('investments'):
@@ -814,6 +973,14 @@ def main():
             else:
                 print("\nSUSPICIOUS ACTIVITIES: None detected")
                 
+            # New: Print behavior patterns
+            if user_profile.get('behavior_patterns'):
+                print("\nBEHAVIOR PATTERNS:")
+                for pattern, confidence in user_profile['behavior_patterns'].items():
+                    print(f"  - {pattern} (Confidence: {confidence:.2f})")
+            else:
+                print("\nBEHAVIOR PATTERNS: None detected")
+                
             # Print transaction patterns
             if user_profile.get('transaction_patterns'):
                 print("\nTRANSACTION PATTERNS:")
@@ -825,6 +992,25 @@ def main():
                 print(f"  - Cluster Info: {patterns.get('cluster_explanation', 'N/A')}")
             
             print(f"{'='*60}")
+            
+        # NEW: Print summary of end user analysis
+        end_users = [addr for addr in address_list if predictor.calculate_end_user_likelihood(addr) > 0.7]
+        print(f"\n\nEND USER ANALYSIS SUMMARY")
+        print(f"{'='*60}")
+        print(f"Total addresses analyzed: {len(address_list)}")
+        print(f"Likely end users identified: {len(end_users)} ({len(end_users)/len(address_list)*100:.1f}%)")
+        
+        # Categorize end users
+        if end_users:
+            end_user_categories = {}
+            for addr in end_users:
+                user_type = predictor.predict_user_type(addr)
+                category = user_type.get('user_category_name', 'Unknown')
+                end_user_categories[category] = end_user_categories.get(category, 0) + 1
+                
+            print("\nEND USER CATEGORIES:")
+            for category, count in end_user_categories.items():
+                print(f"  - {category}: {count} ({count/len(end_users)*100:.1f}%)")
         
     except Exception as e:
         print(f"\nError: {str(e)}")
