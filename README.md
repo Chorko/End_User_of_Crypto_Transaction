@@ -58,7 +58,125 @@ End User Likelihood = f(transaction_volume, network_diversity, exchange_interact
                         defi_interactions, contract_status, known_patterns)
 ```
 
-## Setup and Usage
+## Detailed Setup Instructions
+
+### 1. Environment Setup
+
+#### Install Python
+Make sure Python 3.6 or newer is installed:
+```
+python --version
+```
+
+#### Create a Virtual Environment (Recommended)
+```
+# On Windows:
+python -m venv venv
+venv\Scripts\activate
+
+# On macOS/Linux:
+python -m venv venv
+source venv/bin/activate
+```
+
+### 2. Project Setup
+
+#### Clone or Download the Project
+If using Git:
+```
+git clone <repository-url>
+cd <project-directory>
+```
+
+Or simply download and extract the ZIP file to a folder.
+
+#### Install Dependencies
+Create a requirements.txt file with these dependencies:
+```
+requests
+numpy
+scikit-learn
+python-dotenv
+networkx
+matplotlib
+pandas
+```
+
+Then install:
+```
+pip install -r requirements.txt
+```
+
+### 3. API Key Setup
+
+#### Get an Etherscan API Key
+1. Go to https://etherscan.io/
+2. Register for an account if you don't have one
+3. Once logged in, go to https://etherscan.io/myapikey
+4. Click "Add" to create a new API key
+5. Give it a name (e.g., "Transaction Analysis")
+6. Copy your new API key
+
+#### Set Up Environment Variables
+Create a file named `.env` in the project root directory:
+```
+ETHERSCAN_API_KEY=your_api_key_here
+```
+Replace "your_api_key_here" with the API key from Etherscan.
+
+### 4. Running the Project
+
+#### Make Sure the Required Files Exist
+Ensure you have at least these files:
+- enduser.py
+- oldfunc.py (referenced in the imports)
+
+#### Run the Analysis
+```
+python enduser.py
+```
+
+### 5. Troubleshooting Common Issues
+
+#### API Key Issues
+If you see an error about an invalid API key:
+- Double-check that the `.env` file is in the correct location
+- Verify the API key is correct
+- Check for any spaces or typos in the `.env` file
+
+#### Module Not Found Errors
+If you see errors like "No module named 'X'":
+```
+pip install X
+```
+
+#### Network Connection Issues
+If you see connection errors:
+- Check your internet connection
+- Etherscan may have rate limits - the code has rate limiting built in, but you might need to wait if you hit API limits
+
+#### Error with oldfunc.py
+If you're getting an error related to `oldfunc.py` or `EthereumAddressClusterer`:
+1. Make sure this file exists in your project directory
+2. If it doesn't exist, you'll need to implement the missing functionality, or reach out for this specific file
+
+### 6. Verification
+
+When the code runs successfully:
+1. It will fetch Ethereum addresses from different categories
+2. Build a transaction graph
+3. Perform clustering analysis
+4. Train machine learning models
+5. Provide detailed information about analyzed addresses
+
+You should see output showing:
+- API key validation
+- Address fetching
+- Clustering results
+- Machine learning model training
+- Sample address analysis
+
+## Setup and Usage (Basic)
 
 ### Prerequisites
 

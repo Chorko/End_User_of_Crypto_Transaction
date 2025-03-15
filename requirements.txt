@@ -1,5 +1,8 @@
-torch
-torch_geometric
-scikit-learn
+requests
 numpy
+scikit-learn
+python-dotenv
 networkx
+matplotlib
+pandas
+scipy
