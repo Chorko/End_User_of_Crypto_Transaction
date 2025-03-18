@@ -59,19 +59,20 @@ function TransactionRow({ transaction, isLoading = false, expanded = false, onEx
         <TableCell className="text-sm">{transaction.timestamp}</TableCell>
         <TableCell className="text-center">
           <Badge
-            variant={
-              transaction.status === "confirmed"
-                ? "success"
-                : transaction.status === "pending"
-                ? "outline"
-                : "destructive"
-            }
-            className="capitalize"
+            variant="outline"  // Use consistent outline variant for all statuses
+            className={`capitalize ${
+              transaction.status === "confirmed" ? "bg-green-500/20 text-green-500 border-green-500/50 hover:bg-green-500/20" : 
+              transaction.status === "pending" ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/50 hover:bg-yellow-500/20" :
+              "bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500/20"
+            }`}
           >
             {transaction.status}
           </Badge>
         </TableCell>
-        <TableCell className="text-right" onClick={onExpandToggle}>
+        <TableCell className="text-right" onClick={(e) => {
+          e.stopPropagation(); // Prevent row click from triggering when clicking the button
+          onExpandToggle();
+        }}>
           <Button variant="ghost" size="icon" className="h-8 w-8">
             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
@@ -202,7 +203,7 @@ export function TransactionTable({
 }) {
   const [page, setPage] = useState(1)
   const [expanded, setExpanded] = useState<string | null>(null)
-  const [sort, setSort] = useState<{ column: keyof Transaction | null; direction: "asc" | "desc" }>({
+  const [sort, setSort] = useState<{ column: keyof Transaction | "endUserLikelihood" | null; direction: "asc" | "desc" }>({
     column: null,
     direction: "desc",
   })
@@ -293,7 +294,7 @@ export function TransactionTable({
     return <TableSkeleton />
   }
 
-  const handleSort = (column: string) => {
+  const handleSort = (column: keyof Transaction | "endUserLikelihood") => {
     if (sort.column === column) {
       setSort({
         ...sort,
@@ -330,8 +331,9 @@ export function TransactionTable({
         valueB = parseFloat(b.amount)
         break
       case "timestamp":
-        valueA = a.timestamp
-        valueB = b.timestamp
+        // Convert timestamp strings to Date objects for proper chronological sorting
+        valueA = new Date(a.timestamp).getTime()
+        valueB = new Date(b.timestamp).getTime()
         break
       case "status":
         valueA = a.status
