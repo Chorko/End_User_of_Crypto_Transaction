@@ -794,10 +794,10 @@ class EndUserPredictor:
             try:
                 # Ensure the model is properly initialized
                 if hasattr(self.xgb_model, 'predict_proba'):
-                xgb_probabilities = self.xgb_model.predict_proba(features_scaled)[0]
+                    xgb_probabilities = self.xgb_model.predict_proba(features_scaled)[0]
                     # Sanity check on the probabilities
                     if len(xgb_probabilities) > 0 and 0.0 <= xgb_probabilities[0] <= 1.0:
-                xgb_prob = xgb_probabilities[0]
+                        xgb_prob = xgb_probabilities[0]
                     else:
                         print("Invalid XGBoost probabilities. Using Random Forest only.")
                 else:
@@ -902,9 +902,9 @@ class EndUserPredictor:
                     timestamps = sorted(timestamps)
                     
                     if len(timestamps) >= 3:  # Need at least 3 valid timestamps to calculate intervals
-                    intervals = [timestamps[i+1] - timestamps[i] for i in range(len(timestamps)-1)]
-                    if intervals:
-                        avg_interval = sum(intervals) / len(intervals)
+                        intervals = [timestamps[i+1] - timestamps[i] for i in range(len(timestamps)-1)]
+                        if intervals:
+                            avg_interval = sum(intervals) / len(intervals)
                             
                             # Calculate standard deviation with more robustness
                             if avg_interval > 0:
@@ -925,7 +925,7 @@ class EndUserPredictor:
                                         patterns["regular_intervals"] = 0.85
                                     elif regularity > 0.65:
                                         patterns["regular_intervals"] = 0.7
-                        elif regularity > 0.5:
+                                    elif regularity > 0.5:
                                         patterns["regular_intervals"] = 0.5
                 except Exception as interval_error:
                     print(f"Error calculating transaction intervals: {interval_error}")
@@ -975,7 +975,7 @@ class EndUserPredictor:
             
             # Scale features with robust error handling
             try:
-            features_scaled = self.scaler.fit_transform(features)
+                features_scaled = self.scaler.fit_transform(features)
             except Exception as scale_error:
                 print(f"Feature scaling failed: {str(scale_error)}. Skipping anomaly detection.")
                 self.isolation_forest = None
@@ -992,19 +992,19 @@ class EndUserPredictor:
             
             # Fit the model with error handling
             try:
-            self.isolation_forest.fit(features_scaled)
+                self.isolation_forest.fit(features_scaled)
             
-            # Calculate anomaly scores for evaluation
-            anomaly_scores = self.isolation_forest.score_samples(features_scaled)
+                # Calculate anomaly scores for evaluation
+                anomaly_scores = self.isolation_forest.score_samples(features_scaled)
             
-            # Convert scores to 0-1 scale (higher = more anomalous)
-            normalized_scores = 1 - (1 + anomaly_scores) / 2
+                # Convert scores to 0-1 scale (higher = more anomalous)
+                normalized_scores = 1 - (1 + anomaly_scores) / 2
             
                 # Count detected anomalies with a more reasonable threshold (0.8)
                 anomaly_count = sum(1 for score in normalized_scores if score > 0.8)
             
-            print(f"Isolation Forest trained successfully.")
-            print(f"Detected {anomaly_count} potential anomalies out of {len(addresses)} addresses ({anomaly_count/len(addresses)*100:.1f}%)")
+                print(f"Isolation Forest trained successfully.")
+                print(f"Detected {anomaly_count} potential anomalies out of {len(addresses)} addresses ({anomaly_count/len(addresses)*100:.1f}%)")
             except Exception as fit_error:
                 print(f"Isolation Forest fitting failed: {str(fit_error)}. Skipping anomaly detection.")
                 self.isolation_forest = None
@@ -1044,7 +1044,7 @@ class EndUserPredictor:
             
             # Scale features with error handling
             try:
-            features_scaled = self.scaler.fit_transform(features)
+                features_scaled = self.scaler.fit_transform(features)
             except Exception as scale_error:
                 print(f"Feature scaling failed: {str(scale_error)}. Using rule-based classification.")
                 self.random_forest = None
@@ -1064,9 +1064,9 @@ class EndUserPredictor:
             
             # Split data with error handling
             try:
-            X_train, X_test, y_train, y_test = train_test_split(
-                features_scaled, labels, test_size=0.25, random_state=42, stratify=labels
-            )
+                X_train, X_test, y_train, y_test = train_test_split(
+                    features_scaled, labels, test_size=0.25, random_state=42, stratify=labels
+                )
             except ValueError as split_error:
                 # If stratification fails, try without it
                 print(f"Stratified split failed: {str(split_error)}. Trying regular split.")
@@ -1092,14 +1092,14 @@ class EndUserPredictor:
             
             # Fit the model with error handling
             try:
-            self.random_forest.fit(X_train, y_train)
+                self.random_forest.fit(X_train, y_train)
             
-            # Evaluate model
-            train_accuracy = self.random_forest.score(X_train, y_train)
-            test_accuracy = self.random_forest.score(X_test, y_test)
+                # Evaluate model
+                train_accuracy = self.random_forest.score(X_train, y_train)
+                test_accuracy = self.random_forest.score(X_test, y_test)
             
                 print(f"Random Forest trained successfully on real data.")
-            print(f"Train accuracy: {train_accuracy:.4f}, Test accuracy: {test_accuracy:.4f}")
+                print(f"Train accuracy: {train_accuracy:.4f}, Test accuracy: {test_accuracy:.4f}")
             
                 # Check for massive overfitting
                 if train_accuracy > 0.95 and test_accuracy < 0.6:
@@ -1161,9 +1161,9 @@ class EndUserPredictor:
             except Exception as e:
                 print(f"Error with ML prediction: {str(e)}")
                 # Fall back to rule-based categorization
-                    category = self.fallback_categorize_address(address)
-                    results["user_category"] = category
-                    results["user_category_name"] = self.user_categories.get(category, "Individual/Retail User")
+                category = self.fallback_categorize_address(address)
+                results["user_category"] = category
+                results["user_category_name"] = self.user_categories.get(category, "Individual/Retail User")
                 results["confidence"] = 0.60
                 results["prediction_method"] = "rule_based"
         else:
@@ -2025,7 +2025,7 @@ def save_results(analyzed_users, clusters, category_distribution):
         print(f"\nResults saved to {filename} and {latest_file}")
         return True
 
-        except Exception as e:
+    except Exception as e:
         print(f"\nError saving results: {str(e)}")
         import traceback
         traceback.print_exc()  # Print full traceback for debugging
@@ -2055,13 +2055,13 @@ def main():
     print("\nStarting clustering analysis...")
     clusters = clusterer.cluster_addresses(addresses)
     
-        print("\nClustering Results:")
+    print("\nClustering Results:")
     for cluster_id, cluster in clusters.items():
-                print(f"\nCluster {cluster_id}:")
+        print(f"\nCluster {cluster_id}:")
         for addr in cluster:
             print(f"  {addr}")
 
-        print("\nBuilding transaction graph...")
+    print("\nBuilding transaction graph...")
     clusterer.build_transaction_graph(addresses)
     
     # Print basic graph statistics
@@ -2071,15 +2071,15 @@ def main():
     print(f"Number of unique addresses (nodes): {n_nodes}")
     print(f"Number of transactions (edges): {n_edges}")
 
-        print("\nInitializing End User Predictor...")
-        predictor = EndUserPredictor(clusterer.transaction_graph, clusters)
-        
-        print("\nTraining machine learning models...")
+    print("\nInitializing End User Predictor...")
+    predictor = EndUserPredictor(clusterer.transaction_graph, clusters)
+    
+    print("\nTraining machine learning models...")
     predictor.train_isolation_forest(addresses)
     predictor.train_random_forest(addresses)
 
     print("\nAnalyzing all addresses...")
-        analyzed_users = []
+    analyzed_users = []
     total_end_users = 0
     
     for i, address in enumerate(addresses, 1):
@@ -2128,7 +2128,7 @@ def main():
             likelihood_category = "HIGH 🟢"
         elif likelihood > 0.4:
             likelihood_category = "MEDIUM 🟡"
-                else:
+        else:
             likelihood_category = "LOW 🔴"
             
         print(f"\n🔍 Address: {user['address']}")

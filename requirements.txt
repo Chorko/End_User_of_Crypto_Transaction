@@ -6,3 +6,4 @@ networkx
 matplotlib
 pandas
 scipy
+xgboost

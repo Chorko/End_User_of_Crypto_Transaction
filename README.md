@@ -12,6 +12,9 @@ This project provides a framework for analyzing Ethereum blockchain transactions
 - **End User Identification**: Applies multiple heuristics to identify individual end users with confidence scores
 - **Suspicious Activity Detection**: Flags potentially suspicious transaction patterns
 - **Investment Analysis**: Identifies where users have invested their crypto assets
+- **XGBoost Model Integration**: Uses XGBoost for improved prediction accuracy
+- **Comprehensive User Profiling**: Generates detailed user profiles with likelihood scores and confidence metrics
+- **Detailed Event Outputs**: Provides transaction patterns and cluster analysis for each address
 
 ## End User Identification Mechanisms
 
@@ -44,10 +47,11 @@ The system examines how addresses interact with known entity types:
 
 ### 4. Machine Learning Classification
 
-Two ML models are used to improve classification accuracy:
+Multiple ML models are used to improve classification accuracy:
 
 - **Isolation Forest**: Detects anomalous addresses with unusual transaction patterns
 - **Random Forest Classifier**: Predicts the most likely user category based on transaction features
+- **XGBoost Model**: Provides enhanced prediction capabilities with gradient boosting
 
 ### 5. End User Likelihood Score
 
@@ -91,7 +95,12 @@ cd <project-directory>
 Or simply download and extract the ZIP file to a folder.
 
 #### Install Dependencies
-Create a requirements.txt file with these dependencies:
+Install the required dependencies:
+```
+pip install -r requirements.txt
+```
+
+The requirements.txt file includes:
 ```
 requests
 numpy
@@ -100,11 +109,8 @@ python-dotenv
 networkx
 matplotlib
 pandas
-```
-
-Then install:
-```
-pip install -r requirements.txt
+scipy
+xgboost
 ```
 
 ### 3. API Key Setup
@@ -127,9 +133,8 @@ Replace "your_api_key_here" with the API key from Etherscan.
 ### 4. Running the Project
 
 #### Make Sure the Required Files Exist
-Ensure you have at least these files:
+Ensure you have the main file:
 - enduser.py
-- oldfunc.py (referenced in the imports)
 
 #### Run the Analysis
 ```
@@ -155,18 +160,13 @@ If you see connection errors:
 - Check your internet connection
 - Etherscan may have rate limits - the code has rate limiting built in, but you might need to wait if you hit API limits
 
-#### Error with oldfunc.py
-If you're getting an error related to `oldfunc.py` or `EthereumAddressClusterer`:
-1. Make sure this file exists in your project directory
-2. If it doesn't exist, you'll need to implement the missing functionality, or reach out for this specific file
-
 ### 6. Verification
 
 When the code runs successfully:
 1. It will fetch Ethereum addresses from different categories
 2. Build a transaction graph
 3. Perform clustering analysis
-4. Train machine learning models
+4. Train machine learning models (including XGBoost)
 5. Provide detailed information about analyzed addresses
 
 You should see output showing:
@@ -174,53 +174,22 @@ You should see output showing:
 - Address fetching
 - Clustering results
 - Machine learning model training
-- Sample address analysis
-
-## Setup and Usage (Basic)
-
-### Prerequisites
-
-- Python 3.6+
-- Etherscan API key (create one at https://etherscan.io/myapikey)
-
-### Installation
-
-1. Clone this repository
-2. Install required packages:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Create a `.env` file with your Etherscan API key:
-   ```
-   ETHERSCAN_API_KEY=your_api_key_here
-   ```
-
-### Running the Analysis
-
-```python
-python enduser.py
-```
-
-The script will:
-1. Fetch Ethereum addresses from different categories (exchanges, DeFi, NFT, individuals)
-2. Build a transaction graph connecting these addresses
-3. Perform clustering analysis to group similar addresses
-4. Train machine learning models on the transaction data
-5. Analyze individual addresses to determine their user types
-6. Generate a summary of end user analysis results
+- Sample address analysis with likelihood categories (HIGH 🟢, MEDIUM 🟡, LOW 🔴)
 
 ## Example Output
 
 The system generates detailed profiles for each analyzed address, including:
 
 - User category and confidence score
-- End user likelihood score
+- End user likelihood score with visual indicators (HIGH 🟢, MEDIUM 🟡, LOW 🔴)
+- Profile ID and transaction patterns
 - Investment destinations
 - Suspicious activities (if any)
 - Behavioral patterns
 - Transaction statistics
+- Cluster membership information
 
-A summary report provides aggregated statistics on identified end users.
+A summary report provides aggregated statistics on identified end users and saves the results to JSON files for further analysis.
 
 ## Future Improvements
 
@@ -229,4 +198,5 @@ A summary report provides aggregated statistics on identified end users.
 - Gas price sensitivity analysis
 - Temporal pattern analysis with transaction timestamps
 - Cross-chain identity linking
+- Web dashboard integration for interactive analysis
 
