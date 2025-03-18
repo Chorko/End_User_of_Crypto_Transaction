@@ -69,9 +69,9 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between max-w-full px-4 md:px-6">
           <div className="flex items-center gap-2 font-bold text-xl">
             <div className="size-8 rounded-full bg-gradient-to-br from-purple-600 to-cyan-400 flex items-center justify-center">
               <Wallet className="size-4 text-white" />
@@ -79,36 +79,36 @@ export default function DashboardPage() {
             <span>CryptoTrack</span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="relative w-64">
+            <div className="relative w-64 hidden sm:block">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search transactions..." className="pl-8" />
             </div>
             <Button variant="outline" size="sm">
               <Filter className="mr-2 h-4 w-4" />
-              Filters
+              <span className="hidden sm:inline">Filters</span>
             </Button>
           </div>
         </div>
       </header>
-      <main className="flex-1 container py-6">
-        <div className="flex items-center justify-between mb-6">
+      <main className="flex-1 container py-6 w-full max-w-full px-4 md:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm">
               <Clock className="mr-2 h-4 w-4" />
-              Last 24 hours
+              <span className="hidden sm:inline">Last 24 hours</span>
             </Button>
             <Button variant="outline" size="sm">
               <ArrowLeftRight className="mr-2 h-4 w-4" />
-              Export
+              <span className="hidden sm:inline">Export</span>
             </Button>
           </div>
         </div>
 
-        <div className="space-y-8">
-          <Tabs defaultValue="overview" className="space-y-4">
-            <div className="flex items-center">
-              <TabsList>
+        <div className="space-y-8 w-full">
+          <Tabs defaultValue="overview" className="space-y-4 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <TabsList className="h-auto flex-wrap">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="endusers">End Users</TabsTrigger>
                 <TabsTrigger value="clusters">Clusters</TabsTrigger>
@@ -179,11 +179,11 @@ export default function DashboardPage() {
                   <CardTitle>Transaction Network</CardTitle>
                   <CardDescription>Visualization of cryptocurrency movement between addresses</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="h-[400px]">
+                <CardContent className="p-0">
+                  <div className="h-[400px] w-full">
                     <TransactionGraph />
                   </div>
-                  <div className="mt-4 p-3 border border-purple-900/30 bg-purple-950/20 rounded-md text-xs text-muted-foreground">
+                  <div className="mt-4 p-3 border border-purple-900/30 bg-purple-950/20 rounded-md text-xs text-muted-foreground m-4">
                     <p className="flex items-center">
                       <span className="font-semibold text-purple-400">Note:</span>
                       <span className="ml-2">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
             </TabsContent>
             <TabsContent value="endusers" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="col-span-2">
+                <Card className="col-span-2 min-h-[300px]">
                   <CardHeader>
                     <CardTitle>End User Distribution</CardTitle>
                   </CardHeader>
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                     )}
                   </CardContent>
                 </Card>
-                <Card className="col-span-2">
+                <Card className="col-span-2 min-h-[300px]">
                   <CardHeader>
                     <CardTitle>End User Confidence</CardTitle>
                   </CardHeader>

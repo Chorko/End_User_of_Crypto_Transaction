@@ -220,6 +220,20 @@ export function TransactionGraph() {
       gradient.append("stop").attr("offset", "100%").attr("stop-color", "rgba(156, 163, 175, 0.6)")
     })
     
+    // Create gold gradient for end users
+    const goldGradient = defs
+      .append("radialGradient")
+      .attr("id", "gold-gradient")
+      .attr("cx", "50%")
+      .attr("cy", "50%")
+      .attr("r", "50%")
+      .attr("fx", "50%")
+      .attr("fy", "50%")
+    
+    goldGradient.append("stop").attr("offset", "0%").attr("stop-color", "#fbbf24") // Amber-400
+    goldGradient.append("stop").attr("offset", "70%").attr("stop-color", "#f59e0b") // Amber-500
+    goldGradient.append("stop").attr("offset", "100%").attr("stop-color", "#d97706") // Amber-600
+    
     // Define a glow filter for end users
     const filter = defs.append("filter")
       .attr("id", "glow")
@@ -228,7 +242,19 @@ export function TransactionGraph() {
       .attr("width", "200%")
       .attr("height", "200%");
     
+    // Add gold glow effect
+    const feFlood = filter.append("feFlood")
+      .attr("flood-color", "#f59e0b")  // Amber-500
+      .attr("result", "flood");
+      
+    const feComposite = filter.append("feComposite")
+      .attr("in", "flood")
+      .attr("in2", "SourceGraphic")
+      .attr("operator", "in")
+      .attr("result", "color");
+      
     filter.append("feGaussianBlur")
+      .attr("in", "color")
       .attr("stdDeviation", "3")
       .attr("result", "coloredBlur");
     
@@ -262,9 +288,15 @@ export function TransactionGraph() {
     node
       .append("circle")
       .attr("r", (d) => Math.sqrt(d.value) * 2)
-      .attr("fill", (d) => NODE_COLORS[d.group as keyof typeof NODE_COLORS] || NODE_COLORS.default)
-      .attr("stroke", "#10101a")
-      .attr("stroke-width", 1.5)
+      .attr("fill", (d) => {
+        // Use gold color for end users, otherwise use category color
+        if (d.is_end_user) {
+          return "url(#gold-gradient)"
+        }
+        return NODE_COLORS[d.group as keyof typeof NODE_COLORS] || NODE_COLORS.default
+      })
+      .attr("stroke", (d) => d.is_end_user ? "#f59e0b" : "#10101a")
+      .attr("stroke-width", (d) => d.is_end_user ? 2 : 1.5)
       .attr("filter", (d) => d.is_end_user ? "url(#glow)" : "")
 
     // Add labels to nodes
@@ -363,68 +395,68 @@ export function TransactionGraph() {
     d3.select(svgRef.current).transition().duration(300).call(d3.zoom().scaleTo as any, zoom / 1.2)
   }
 
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-black/10 rounded-lg">
-        <Skeleton className="h-[300px] w-[300px] rounded-full opacity-50" />
-      </div>
-    )
-  }
-
   return (
-    <motion.div
-      className="w-full h-full relative"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <svg ref={svgRef} className="w-full h-full bg-black/5 rounded-lg" />
-      
-      {/* Zoom Controls */}
-      <div className="absolute bottom-4 right-4 flex gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleZoomIn}
-          className="bg-background/80 backdrop-blur-sm"
-        >
-          <ZoomIn className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleZoomOut}
-          className="bg-background/80 backdrop-blur-sm"
-        >
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      {/* Legend */}
-      <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm p-3 rounded-md text-xs">
-        <div className="font-medium mb-2">Categories</div>
-        <div className="space-y-1.5">
-          {Object.entries(NODE_LABELS).map(([key, label]) => {
-            if (key === "default") return null
-            return (
-              <div key={key} className="flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
-                  style={{ backgroundColor: NODE_COLORS[key as keyof typeof NODE_COLORS] }}
-                ></div>
-                <span>{label}</span>
-              </div>
-            )
-          })}
+    <div className="relative w-full h-full">
+      {isLoading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <Skeleton className="w-full h-full absolute" />
         </div>
-        <div className="mt-3 pt-2 border-t border-muted">
-          <div className="flex items-center">
-            <div className="w-4 h-4 rounded-full mr-2 shadow-md shadow-yellow-400/30"></div>
-            <span>End User (high likelihood)</span>
+      ) : (
+        <div className="w-full h-full overflow-hidden relative">
+          <div className="absolute top-4 right-4 flex space-x-2 z-10">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-8 w-8 bg-background/80 backdrop-blur" 
+              onClick={handleZoomIn}
+            >
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-8 w-8 bg-background/80 backdrop-blur" 
+              onClick={handleZoomOut}
+            >
+              <ZoomOut className="h-4 w-4" />
+            </Button>
           </div>
+          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm p-3 rounded-md text-xs z-10">
+            <div className="font-medium mb-2">Categories</div>
+            <div className="space-y-1.5">
+              {Object.entries(NODE_LABELS).map(([key, label]) => {
+                if (key === "default") return null
+                return (
+                  <div key={key} className="flex items-center">
+                    <div 
+                      className="w-3 h-3 rounded-full mr-2" 
+                      style={{ backgroundColor: NODE_COLORS[key as keyof typeof NODE_COLORS] }}
+                    ></div>
+                    <span>{label}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-3 pt-2 border-t border-muted">
+              <div className="flex items-center">
+                <div className="w-4 h-4 rounded-full mr-2 relative">
+                  <div className="absolute inset-0 rounded-full bg-amber-400"></div>
+                  <div className="absolute inset-0 rounded-full bg-yellow-300/30 animate-ping"></div>
+                </div>
+                <span>End User (high likelihood)</span>
+              </div>
+            </div>
+          </div>
+          <svg 
+            ref={svgRef} 
+            className="w-full h-full" 
+            style={{ minHeight: "400px", maxWidth: "100%" }}
+            viewBox="0 0 800 400"
+            preserveAspectRatio="xMidYMid meet"
+          ></svg>
         </div>
-      </div>
-    </motion.div>
+      )}
+    </div>
   )
 }
 

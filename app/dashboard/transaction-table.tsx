@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { ArrowUpDown, ChevronLeft, ChevronRight, ExternalLink, ChevronDown, ChevronUp } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { Transaction, mockTransactions } from "./mock-data"
 
@@ -363,108 +363,148 @@ export function TransactionTable({
   const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage)
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[150px]">
-                <div className="flex items-center cursor-pointer" onClick={() => handleSort("id")}>
-                  Transaction
-                  {sort.column === "id" && (
-                    <ArrowUpDown className={`ml-2 h-4 w-4 ${sort.direction === "asc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div className="flex items-center cursor-pointer" onClick={() => handleSort("from")}>
-                  From
-                  {sort.column === "from" && (
-                    <ArrowUpDown className={`ml-2 h-4 w-4 ${sort.direction === "asc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div className="flex items-center cursor-pointer" onClick={() => handleSort("to")}>
-                  To
-                  {sort.column === "to" && (
-                    <ArrowUpDown className={`ml-2 h-4 w-4 ${sort.direction === "asc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>
-                <div className="flex items-center cursor-pointer" onClick={() => handleSort("amount")}>
-                  Amount
-                  {sort.column === "amount" && (
-                    <ArrowUpDown className={`ml-2 h-4 w-4 ${sort.direction === "asc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="hidden lg:table-cell">
-                <div className="flex items-center cursor-pointer" onClick={() => handleSort("timestamp")}>
-                  Timestamp
-                  {sort.column === "timestamp" && (
-                    <ArrowUpDown className={`ml-2 h-4 w-4 ${sort.direction === "asc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="hidden md:table-cell">
-                <div className="flex items-center justify-center cursor-pointer" onClick={() => handleSort("status")}>
-                  Status
-                  {sort.column === "status" && (
-                    <ArrowUpDown className={`ml-2 h-4 w-4 ${sort.direction === "asc" ? "rotate-180" : ""}`} />
-                  )}
-                </div>
-              </TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loadingData
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <TransactionRow key={i} transaction={{} as Transaction} isLoading={true} />
-                ))
-              : paginatedTransactions.map((transaction) => (
-                  <TransactionRow 
-                    key={transaction.id} 
-                    transaction={transaction} 
-                    expanded={transaction.id === expanded}
-                    onExpandToggle={() => setExpanded(transaction.id === expanded ? null : transaction.id)}
-                  />
-                ))}
-            {!loadingData && paginatedTransactions.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">No transactions found.</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {showPagination && totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1 || loadingData}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-xs text-muted-foreground">
-            Page {page} of {totalPages}
+    <Card className="border-border/50">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-base font-medium">Recent Transactions</CardTitle>
+        {filteredTransactions.length > 0 && !loadingData && (
+          <div className="text-sm text-muted-foreground">
+            {filterByEndUsers ? "End users only" : "All addresses"}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages || loadingData}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-    </div>
+        )}
+      </CardHeader>
+      <CardContent className="p-0">
+        {loadingData || isLoading ? (
+          <div className="p-4">
+            <TableSkeleton />
+          </div>
+        ) : (
+          <div className="w-full">
+            <div className="rounded-md border min-h-[400px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-3 h-8"
+                        onClick={() => handleSort("id")}
+                      >
+                        ID
+                        <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-3 h-8"
+                        onClick={() => handleSort("from")}
+                      >
+                        From
+                        <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-3 h-8"
+                        onClick={() => handleSort("to")}
+                      >
+                        To
+                        <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-3 h-8"
+                        onClick={() => handleSort("amount")}
+                      >
+                        Amount
+                        <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-3 h-8"
+                        onClick={() => handleSort("timestamp")}
+                      >
+                        Date
+                        <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-3 h-8"
+                        onClick={() => handleSort("status")}
+                      >
+                        Status
+                        <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    </TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedTransactions.length > 0 ? (
+                    paginatedTransactions.map((transaction) => (
+                      <TransactionRow
+                        key={transaction.id}
+                        transaction={transaction}
+                        expanded={expanded === transaction.id}
+                        onExpandToggle={() =>
+                          setExpanded(expanded === transaction.id ? null : transaction.id)
+                        }
+                      />
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-48 text-center">
+                        No transactions found
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            {showPagination && (
+              <div className="flex items-center justify-between p-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing <span className="font-medium">{((page - 1) * itemsPerPage) + 1}</span> to{" "}
+                  <span className="font-medium">{Math.min(page * itemsPerPage, filteredTransactions.length)}</span> of{" "}
+                  <span className="font-medium">{filteredTransactions.length}</span> transactions
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={page === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
