@@ -1,0 +1,169 @@
+{
+  "timestamp": "2025-03-18T21:08:52.870560",
+  "total_addresses": 20,
+  "clusters": [
+    {
+      "id": "0",
+      "size": 8,
+      "addresses": [
+        "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "0xe8d6f808248d3303275edc5825016863c5f3da79",
+        "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+        "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+        "0x50d0ed95643e33e505a295217224b06f6c096f67",
+        "0x8d388ae247195038a1f7e1f3e20d7dbc626da896",
+        "0x4eaec5260a45e8c9a9df58e35ea5cf51655c9add",
+        "0xafd9e1988a39be317a55142fab0fd641cc84a400"
+      ]
+    },
+    {
+      "id": "-1",
+      "size": 12,
+      "addresses": [
+        "0x1776e1f26f98b1a5df9cd347953a26dd3cb46671",
+        "0x61ab3d3637f27573bc5409f219cba6841e7bd18c",
+        "0x4c5f6ad6628d205259443ebcf6cc4cdd7d6cbf81",
+        "0x1195ba0ac42223a19ac7206047d87ae0726b3548",
+        "0x93793bd1f3e35a0efd098c30e486a860a0ef7551",
+        "0x9642b23ed1e01df1092b92641051881a322f5d4e",
+        "0xd7e1236c08731c3632519dcd1a581bfe6876a3b2",
+        "0xf25a9f63d6f0edd6aeb8e77f6a4c8b506c507da7",
+        "0xba4405eeb9fd5c8ccf9b3788b6988237fff17c54",
+        "0x4c1aed6376802c6db50728a4f1bf5d981425d308",
+        "0x52ee324f2bcd0c5363d713eb9f62d1ee47266ac1",
+        "0x421925abb2e3311571f18e545e37fb983318f274"
+      ]
+    }
+  ],
+  "category_distribution": {
+    "2": 7,
+    "0": 9,
+    "4": 2,
+    "3": 2
+  },
+  "visualization_data": {
+    "nodes": [
+      {
+        "id": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "group": 2,
+        "value": 34,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x1776e1f26f98b1a5df9cd347953a26dd3cb46671",
+        "group": 0,
+        "value": 10,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x61ab3d3637f27573bc5409f219cba6841e7bd18c",
+        "group": 2,
+        "value": 4146,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x4c5f6ad6628d205259443ebcf6cc4cdd7d6cbf81",
+        "group": 2,
+        "value": 843,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0xe8d6f808248d3303275edc5825016863c5f3da79",
+        "group": 2,
+        "value": 18,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x1195ba0ac42223a19ac7206047d87ae0726b3548",
+        "group": 2,
+        "value": 28,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+        "group": 4,
+        "value": 4,
+        "label": "NFT Trader/Collector"
+      },
+      {
+        "id": "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+        "group": 4,
+        "value": 2,
+        "label": "NFT Trader/Collector"
+      },
+      {
+        "id": "0x50d0ed95643e33e505a295217224b06f6c096f67",
+        "group": 3,
+        "value": 9,
+        "label": "DeFi User"
+      },
+      {
+        "id": "0x93793bd1f3e35a0efd098c30e486a860a0ef7551",
+        "group": 0,
+        "value": 11,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x9642b23ed1e01df1092b92641051881a322f5d4e",
+        "group": 2,
+        "value": 4620,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0xd7e1236c08731c3632519dcd1a581bfe6876a3b2",
+        "group": 2,
+        "value": 51,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0xf25a9f63d6f0edd6aeb8e77f6a4c8b506c507da7",
+        "group": 0,
+        "value": 6,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0xba4405eeb9fd5c8ccf9b3788b6988237fff17c54",
+        "group": 0,
+        "value": 2,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x4c1aed6376802c6db50728a4f1bf5d981425d308",
+        "group": 0,
+        "value": 2,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x52ee324f2bcd0c5363d713eb9f62d1ee47266ac1",
+        "group": 0,
+        "value": 5,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x421925abb2e3311571f18e545e37fb983318f274",
+        "group": 0,
+        "value": 6,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x8d388ae247195038a1f7e1f3e20d7dbc626da896",
+        "group": 0,
+        "value": 17,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x4eaec5260a45e8c9a9df58e35ea5cf51655c9add",
+        "group": 0,
+        "value": 10,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0xafd9e1988a39be317a55142fab0fd641cc84a400",
+        "group": 0,
+        "value": 20,
+        "label": "Individual/Retail User"
+      }
+    ],
+    "links": []
+  }
+}

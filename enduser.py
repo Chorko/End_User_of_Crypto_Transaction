@@ -15,6 +15,8 @@ import random
 import sys
 import pandas as pd
 from sklearn.cluster import DBSCAN
+import json
+import importlib
 
 # Load environment variables
 load_dotenv()
@@ -616,96 +618,54 @@ class EndUserPredictor:
             print(f"Graph feature extraction failed: {str(e)}")
             return {"pagerank": 0, "clustering_coefficient": 0, "betweenness_centrality": 0}
 
-    def train_xgboost(self, addresses: List[str]):
-        """Train XGBoost classifier for more accurate predictions"""
+    def train_xgboost_model(self, addresses, features):
+        """Train XGBoost model for anomaly detection"""
         try:
-            # Improved XGBoost installation check
-            import importlib
+            import xgboost as xgb
+            from sklearn.model_selection import train_test_split
+            from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
             
-            # First try direct import
-            try:
-                import xgboost as xgb
-            except ImportError:
-                # If direct import fails, check if it's available
-                xgb_spec = importlib.util.find_spec("xgboost")
-                if xgb_spec is None:
-                    print("XGBoost not available. Using Random Forest only.")
-                    self.xgb_model = None
-                    return
-                else:
-                    # If spec exists but import failed, there might be other issues
-                    print("XGBoost found but couldn't be imported properly. Using Random Forest only.")
-                    self.xgb_model = None
-                    return
+            print("\nTraining XGBoost model...")
             
-            # Check if we have enough data to train
-            if len(addresses) < 8:  # Need sufficient samples for stratification
-                print("Not enough data to reliably train XGBoost. Using Random Forest only.")
-                self.xgb_model = None
-                return
-                
-            # Generate labels and features
-            labels = self.categorize_addresses(addresses)
-            features = self.extract_features(addresses)
+            # Prepare data
+            X = np.array([list(f.values()) for f in features])
+            y = np.ones(len(X))  # Assume all are normal initially
             
-            # Check for uneven class distribution
-            label_counts = collections.Counter(labels)
-            if min(label_counts.values()) < 2:
-                print("Insufficient class representation for XGBoost. Using Random Forest only.")
-                self.xgb_model = None
-                return
-                
-            features_scaled = self.scaler.fit_transform(features)
+            # Split data
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
             
-            # Split data with error handling
-            try:
-                X_train, X_test, y_train, y_test = train_test_split(
-                    features_scaled, labels, test_size=0.25, random_state=42, stratify=labels
-                )
-            except ValueError as split_error:
-                # If stratification fails, try without it
-                print(f"Stratified split failed: {str(split_error)}. Trying regular split.")
-                X_train, X_test, y_train, y_test = train_test_split(
-                    features_scaled, labels, test_size=0.25, random_state=42
-                )
-            
-            # Define and train XGBoost with more conservative parameters
-            self.xgb_model = xgb.XGBClassifier(
-                objective='multi:softprob',
-                num_class=len(self.user_categories),
-                learning_rate=0.03,  # Reduced for stability
-                max_depth=4,         # Reduced to avoid overfitting
-                min_child_weight=3,  # Increased for stability
-                subsample=0.8,
-                colsample_bytree=0.8,
-                n_estimators=50,     # Reduced for speed
-                eval_metric='mlogloss',
-                use_label_encoder=False  # Prevents deprecated warning
+            # Train model
+            model = xgb.XGBClassifier(
+                objective='binary:logistic',
+                n_estimators=100,
+                learning_rate=0.1,
+                max_depth=6,
+                random_state=42
             )
             
-            # Add error handling for fit method
-            try:
-                self.xgb_model.fit(
-                    X_train, y_train,
-                    eval_set=[(X_test, y_test)],
-                    early_stopping_rounds=10,
-                    verbose=False
-                )
-                
-                # Print model performance
-                train_accuracy = self.xgb_model.score(X_train, y_train)
-                test_accuracy = self.xgb_model.score(X_test, y_test)
-                print(f"XGBoost - Train accuracy: {train_accuracy:.4f}, Test accuracy: {test_accuracy:.4f}")
-            except Exception as fit_error:
-                print(f"XGBoost fitting failed: {str(fit_error)}. Using Random Forest only.")
-                self.xgb_model = None
+            model.fit(X_train, y_train)
+            
+            # Evaluate model
+            y_pred = model.predict(X_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            precision = precision_score(y_test, y_pred)
+            recall = recall_score(y_test, y_pred)
+            f1 = f1_score(y_test, y_pred)
+            
+            print(f"Model Performance:")
+            print(f"Accuracy: {accuracy:.4f}")
+            print(f"Precision: {precision:.4f}")
+            print(f"Recall: {recall:.4f}")
+            print(f"F1 Score: {f1:.4f}")
+            
+            return model
             
         except ImportError:
-            print("XGBoost import failed. Using Random Forest only.")
-            self.xgb_model = None
+            print("XGBoost not available. Skipping XGBoost model training.")
+            return None
         except Exception as e:
-            print(f"Error training XGBoost: {str(e)}")
-            self.xgb_model = None
+            print(f"Error training XGBoost model: {str(e)}")
+            return None
 
     def calculate_end_user_likelihood(self, address: str) -> float:
         """
@@ -834,10 +794,10 @@ class EndUserPredictor:
             try:
                 # Ensure the model is properly initialized
                 if hasattr(self.xgb_model, 'predict_proba'):
-                    xgb_probabilities = self.xgb_model.predict_proba(features_scaled)[0]
+                xgb_probabilities = self.xgb_model.predict_proba(features_scaled)[0]
                     # Sanity check on the probabilities
                     if len(xgb_probabilities) > 0 and 0.0 <= xgb_probabilities[0] <= 1.0:
-                        xgb_prob = xgb_probabilities[0]
+                xgb_prob = xgb_probabilities[0]
                     else:
                         print("Invalid XGBoost probabilities. Using Random Forest only.")
                 else:
@@ -942,9 +902,9 @@ class EndUserPredictor:
                     timestamps = sorted(timestamps)
                     
                     if len(timestamps) >= 3:  # Need at least 3 valid timestamps to calculate intervals
-                        intervals = [timestamps[i+1] - timestamps[i] for i in range(len(timestamps)-1)]
-                        if intervals:
-                            avg_interval = sum(intervals) / len(intervals)
+                    intervals = [timestamps[i+1] - timestamps[i] for i in range(len(timestamps)-1)]
+                    if intervals:
+                        avg_interval = sum(intervals) / len(intervals)
                             
                             # Calculate standard deviation with more robustness
                             if avg_interval > 0:
@@ -965,7 +925,7 @@ class EndUserPredictor:
                                         patterns["regular_intervals"] = 0.85
                                     elif regularity > 0.65:
                                         patterns["regular_intervals"] = 0.7
-                                    elif regularity > 0.5:
+                        elif regularity > 0.5:
                                         patterns["regular_intervals"] = 0.5
                 except Exception as interval_error:
                     print(f"Error calculating transaction intervals: {interval_error}")
@@ -1015,7 +975,7 @@ class EndUserPredictor:
             
             # Scale features with robust error handling
             try:
-                features_scaled = self.scaler.fit_transform(features)
+            features_scaled = self.scaler.fit_transform(features)
             except Exception as scale_error:
                 print(f"Feature scaling failed: {str(scale_error)}. Skipping anomaly detection.")
                 self.isolation_forest = None
@@ -1032,19 +992,19 @@ class EndUserPredictor:
             
             # Fit the model with error handling
             try:
-                self.isolation_forest.fit(features_scaled)
-                
-                # Calculate anomaly scores for evaluation
-                anomaly_scores = self.isolation_forest.score_samples(features_scaled)
-                
-                # Convert scores to 0-1 scale (higher = more anomalous)
-                normalized_scores = 1 - (1 + anomaly_scores) / 2
-                
+            self.isolation_forest.fit(features_scaled)
+            
+            # Calculate anomaly scores for evaluation
+            anomaly_scores = self.isolation_forest.score_samples(features_scaled)
+            
+            # Convert scores to 0-1 scale (higher = more anomalous)
+            normalized_scores = 1 - (1 + anomaly_scores) / 2
+            
                 # Count detected anomalies with a more reasonable threshold (0.8)
                 anomaly_count = sum(1 for score in normalized_scores if score > 0.8)
-                
-                print(f"Isolation Forest trained successfully.")
-                print(f"Detected {anomaly_count} potential anomalies out of {len(addresses)} addresses ({anomaly_count/len(addresses)*100:.1f}%)")
+            
+            print(f"Isolation Forest trained successfully.")
+            print(f"Detected {anomaly_count} potential anomalies out of {len(addresses)} addresses ({anomaly_count/len(addresses)*100:.1f}%)")
             except Exception as fit_error:
                 print(f"Isolation Forest fitting failed: {str(fit_error)}. Skipping anomaly detection.")
                 self.isolation_forest = None
@@ -1084,7 +1044,7 @@ class EndUserPredictor:
             
             # Scale features with error handling
             try:
-                features_scaled = self.scaler.fit_transform(features)
+            features_scaled = self.scaler.fit_transform(features)
             except Exception as scale_error:
                 print(f"Feature scaling failed: {str(scale_error)}. Using rule-based classification.")
                 self.random_forest = None
@@ -1104,9 +1064,9 @@ class EndUserPredictor:
             
             # Split data with error handling
             try:
-                X_train, X_test, y_train, y_test = train_test_split(
-                    features_scaled, labels, test_size=0.25, random_state=42, stratify=labels
-                )
+            X_train, X_test, y_train, y_test = train_test_split(
+                features_scaled, labels, test_size=0.25, random_state=42, stratify=labels
+            )
             except ValueError as split_error:
                 # If stratification fails, try without it
                 print(f"Stratified split failed: {str(split_error)}. Trying regular split.")
@@ -1132,15 +1092,15 @@ class EndUserPredictor:
             
             # Fit the model with error handling
             try:
-                self.random_forest.fit(X_train, y_train)
-                
-                # Evaluate model
-                train_accuracy = self.random_forest.score(X_train, y_train)
-                test_accuracy = self.random_forest.score(X_test, y_test)
-                
+            self.random_forest.fit(X_train, y_train)
+            
+            # Evaluate model
+            train_accuracy = self.random_forest.score(X_train, y_train)
+            test_accuracy = self.random_forest.score(X_test, y_test)
+            
                 print(f"Random Forest trained successfully on real data.")
-                print(f"Train accuracy: {train_accuracy:.4f}, Test accuracy: {test_accuracy:.4f}")
-                
+            print(f"Train accuracy: {train_accuracy:.4f}, Test accuracy: {test_accuracy:.4f}")
+            
                 # Check for massive overfitting
                 if train_accuracy > 0.95 and test_accuracy < 0.6:
                     print("Warning: Model appears to be overfitting. Consider using rule-based classification.")
@@ -1180,14 +1140,14 @@ class EndUserPredictor:
                 results["anomaly_score"] = normalized_anomaly_score
             except Exception as e:
                 print(f"Error getting anomaly score: {str(e)}")
-        
+            
         # Use Random Forest only if properly trained on real data
         if self.random_forest is not None and features_scaled is not None:
             try:
                 prediction = self.random_forest.predict(features_scaled)[0]
                 probabilities = self.random_forest.predict_proba(features_scaled)[0]
                 
-                base_confidence = max(probabilities)
+                base_confidence = max(probabilities) 
                 confidence_adjustment = self.calculate_confidence_adjustment(prediction, address)
                 final_confidence = (base_confidence * 0.6) + (confidence_adjustment * 0.4)
                 
@@ -1201,9 +1161,9 @@ class EndUserPredictor:
             except Exception as e:
                 print(f"Error with ML prediction: {str(e)}")
                 # Fall back to rule-based categorization
-                category = self.fallback_categorize_address(address)
-                results["user_category"] = category
-                results["user_category_name"] = self.user_categories.get(category, "Individual/Retail User")
+                    category = self.fallback_categorize_address(address)
+                    results["user_category"] = category
+                    results["user_category_name"] = self.user_categories.get(category, "Individual/Retail User")
                 results["confidence"] = 0.60
                 results["prediction_method"] = "rule_based"
         else:
@@ -1213,7 +1173,7 @@ class EndUserPredictor:
             results["user_category_name"] = self.user_categories.get(category, "Individual/Retail User") 
             results["confidence"] = 0.60
             results["prediction_method"] = "rule_based"
-        
+            
         return results
 
     def fallback_categorize_address(self, address: str) -> int:
@@ -1796,276 +1756,414 @@ class EndUserPredictor:
         
         return user_profile
 
+def save_results(analyzed_users, clusters, category_distribution):
+    """Save analysis results to a JSON file for dashboard visualization."""
+    try:
+        # Create results directory if it doesn't exist
+        results_dir = "results"
+        os.makedirs(results_dir, exist_ok=True)
+
+        # Ensure category_distribution is a dictionary with string keys and int values
+        converted_distribution = {}
+        if isinstance(category_distribution, dict):
+            for k, v in category_distribution.items():
+                converted_distribution[str(k)] = int(v)
+        else:
+            # Handle the case where category_distribution might not be a dictionary
+            print(f"Warning: category_distribution is not a dictionary: {type(category_distribution)}")
+            converted_distribution = {"0": 1}  # Default fallback
+
+        # Safely extract cluster data
+        cluster_data = []
+        for i, cluster in clusters.items():
+            try:
+                cluster_data.append({
+                    "id": str(i),
+                    "size": len(cluster) if hasattr(cluster, "__len__") else 1,
+                    "addresses": list(cluster) if hasattr(cluster, "__iter__") else [str(cluster)]
+                })
+            except Exception as cluster_error:
+                print(f"Error processing cluster {i}: {str(cluster_error)}")
+                # Add a placeholder for this cluster
+                cluster_data.append({
+                    "id": str(i),
+                    "size": 1,
+                    "addresses": ["error_processing_cluster"]
+                })
+
+        # Safely extract node data
+        nodes_data = []
+        for user in analyzed_users[:50]:  # Limit to 50 nodes for visualization
+            try:
+                node = {
+                    "id": user["address"],
+                    "group": int(user.get("user_category", 0)),
+                    "value": 1,  # Default value
+                    "label": user.get("user_category_name", "Unknown")
+                }
+                
+                # Safely get transaction count
+                if "transaction_patterns" in user and isinstance(user["transaction_patterns"], dict):
+                    tx_count = user["transaction_patterns"].get("total_transactions")
+                    if tx_count is not None:
+                        node["value"] = int(tx_count)
+                
+                nodes_data.append(node)
+            except Exception as node_error:
+                print(f"Error processing node: {str(node_error)}")
+
+        # Safely extract link data
+        links_data = []
+        for user in analyzed_users[:50]:
+            try:
+                # Only add links if we have counterparties
+                if "transaction_patterns" in user and isinstance(user["transaction_patterns"], dict):
+                    counterparties = user["transaction_patterns"].get("unique_counterparties")
+                    if counterparties and hasattr(counterparties, "__iter__"):
+                        # Get the first counterparty safely
+                        target = next(iter(counterparties), user["address"])
+                        links_data.append({
+                            "source": user["address"],
+                            "target": target,
+                            "value": 1
+                        })
+            except Exception as link_error:
+                print(f"Error processing link: {str(link_error)}")
+
+        # NEW: Create event outputs section with key metrics for each address
+        event_outputs = []
+        for user in analyzed_users:
+            try:
+                # Extract key metrics into a simplified format for easier access
+                event_data = {
+                    "address": user.get("address", ""),
+                    "user_profile_id": int(user.get("user_profile_id", 0)),
+                    "user_category": int(user.get("user_category", 0)),
+                    "user_category_name": user.get("user_category_name", "Unknown"),
+                    "end_user_likelihood": float(user.get("end_user_likelihood", 0.0)),
+                    "confidence": float(user.get("confidence", 0.0)),
+                    "is_anomaly": bool(user.get("is_anomaly", False)),
+                }
+                
+                # Add cluster information if available
+                if "transaction_patterns" in user and isinstance(user["transaction_patterns"], dict):
+                    event_data["cluster_id"] = int(user["transaction_patterns"].get("cluster_id", -1))
+                    event_data["total_transactions"] = int(user["transaction_patterns"].get("total_transactions", 0))
+                
+                # Add behavior patterns summary if available - convert any numpy types to Python types
+                if "behavior_patterns" in user and user["behavior_patterns"]:
+                    converted_behavior = {}
+                    for pattern, score in user["behavior_patterns"].items():
+                        converted_behavior[pattern] = float(score)
+                    event_data["behavior_patterns"] = converted_behavior
+                
+                # Add automated behavior summary if available - convert any numpy types to Python types
+                if "automated_behavior" in user and user["automated_behavior"]:
+                    converted_automated = {}
+                    for pattern, score in user["automated_behavior"].items():
+                        converted_automated[pattern] = float(score)
+                    event_data["automated_behavior"] = converted_automated
+                
+                # Add suspicious activities summary (just the patterns, not details)
+                if "suspicious_activities" in user and user["suspicious_activities"]:
+                    suspicious_patterns = [activity["pattern"] for activity in user["suspicious_activities"]]
+                    event_data["suspicious_patterns"] = suspicious_patterns
+                
+                event_outputs.append(event_data)
+            except Exception as event_error:
+                print(f"Error creating event output for address: {str(event_error)}")
+
+        # Add documentation about the output values
+        documentation = {
+            "user_categories": {
+                "0": {
+                    "name": "Individual/Retail User",
+                    "description": "Regular person using crypto occasionally"
+                },
+                "1": {
+                    "name": "Institutional/Large Investor",
+                    "description": "Organizations with high-value transactions"
+                },
+                "2": {
+                    "name": "Exchange/Protocol Account",
+                    "description": "Exchange wallets or protocol contracts"
+                },
+                "3": {
+                    "name": "DeFi User",
+                    "description": "Users actively engaging with decentralized finance"
+                },
+                "4": {
+                    "name": "NFT Trader/Collector",
+                    "description": "Users primarily trading/collecting NFTs"
+                }
+            },
+            "confidence_metrics": {
+                "confidence": "How certain the model is about its categorization (0.0-1.0). Values around 0.60 are typical for addresses with limited transaction data. Higher values (0.80+) indicate strong evidence for the classification.",
+                "confidence_factors": {
+                    "model_confidence": "Raw ML model prediction confidence",
+                    "evidence_adjustment": "Evidence-based adjustments to raw confidence"
+                }
+            },
+            "end_user_likelihood": "Probability the address belongs to an individual (0.0-1.0). 0.70-1.00: HIGH likelihood of being an end user; 0.40-0.70: MEDIUM likelihood; 0.00-0.40: LOW likelihood (likely institutional/contract)",
+            "anomaly_detection": {
+                "is_anomaly": "Whether address shows unusual transaction patterns (true/false)",
+                "anomaly_score": "The degree of abnormality (higher = more unusual)"
+            },
+            "investments": "List of protocols/platforms the address has interacted with. Values indicate estimated proportion of portfolio.",
+            "transaction_patterns": {
+                "total_transactions": "Number of transactions for this address",
+                "unique_counterparties": "Number of unique addresses interacted with",
+                "cluster_id": "Which cluster the address belongs to. -1: Outlier (unique pattern); 0,1,2...: Specific cluster assignments",
+                "cluster_explanation": "Human-readable description of the cluster"
+            },
+            "graph_metrics": {
+                "pagerank": "Importance of address in the network (0.0-1.0). Higher values indicate more central/influential addresses",
+                "clustering_coefficient": "How connected the address's neighbors are (0.0-1.0). 0.00: Neighbors don't transact with each other; 1.00: All neighbors transact with each other",
+                "betweenness_centrality": "How often this address acts as a bridge. Higher values indicate the address connects different parts of the network"
+            },
+            "behavior_patterns": {
+                "gas_optimization": "Evidence of waiting for low gas prices (0.0-1.0)",
+                "high_slippage_tolerance": "Evidence of accepting high slippage (0.0-1.0)",
+                "weekend_trading": "Evidence of weekend activity (typical for retail) (0.0-1.0)",
+                "small_token_diversity": "Evidence of holding few token types (0.0-1.0)",
+                "fiat_on_off_ramps": "Evidence of using exchanges for fiat conversion (0.0-1.0)"
+            },
+            "temporal_patterns": {
+                "weekend_ratio": "Proportion of activity on weekends (0.0-1.0). 0.00: No weekend activity; 1.00: Only weekend activity",
+                "working_hours_ratio": "Proportion of activity during 9AM-5PM (0.0-1.0)",
+                "tx_time_entropy": "Randomness of transaction timing. Lower values indicate more predictable patterns"
+            },
+            "automated_behavior": {
+                "high_frequency_trading": "Evidence of bot-like trading frequency (0.0-1.0)",
+                "regular_intervals": "Evidence of transactions at fixed intervals (0.0-1.0)",
+                "bursty_activity": "Evidence of bursts of activity followed by quiet (0.0-1.0)"
+            },
+            "suspicious_activities": {
+                "high_velocity_small_amounts": "Rapid small transactions (potential washing)",
+                "tornado_cash_interaction": "Interactions with privacy mixers",
+                "wash_trading": "Trading same assets back and forth",
+                "chain_hopping": "Moving across multiple chains",
+                "dormant_reactivation": "Sudden activity after long dormancy"
+            },
+            "note": "The 0.00 values are normal for addresses with limited transactions, as many metrics need multiple interactions to calculate meaningful values."
+        }
+
+        # Convert any numpy types in analyzed_users to Python types
+        converted_users = []
+        for user in analyzed_users:
+            converted_user = {}
+            # Convert each field in the user dictionary
+            for key, value in user.items():
+                if isinstance(value, dict):
+                    # Handle nested dictionaries
+                    converted_dict = {}
+                    for k, v in value.items():
+                        # Convert numpy types to Python types
+                        if hasattr(v, "item") and callable(getattr(v, "item")):
+                            converted_dict[k] = v.item()  # numpy scalar to Python scalar
+                        elif isinstance(v, np.ndarray):
+                            converted_dict[k] = v.tolist()  # numpy array to list
+                        else:
+                            converted_dict[k] = v
+                    converted_user[key] = converted_dict
+                elif isinstance(value, list):
+                    # Handle lists
+                    converted_list = []
+                    for item in value:
+                        if isinstance(item, dict):
+                            # Handle dictionaries inside lists
+                            converted_item = {}
+                            for k, v in item.items():
+                                if hasattr(v, "item") and callable(getattr(v, "item")):
+                                    converted_item[k] = v.item()
+                                elif isinstance(v, np.ndarray):
+                                    converted_item[k] = v.tolist()
+                                else:
+                                    converted_item[k] = v
+                            converted_list.append(converted_item)
+                        elif hasattr(item, "item") and callable(getattr(item, "item")):
+                            converted_list.append(item.item())
+                        elif isinstance(item, np.ndarray):
+                            converted_list.append(item.tolist())
+                        else:
+                            converted_list.append(item)
+                    converted_user[key] = converted_list
+                elif hasattr(value, "item") and callable(getattr(value, "item")):
+                    converted_user[key] = value.item()  # Convert numpy scalar to Python scalar
+                elif isinstance(value, np.ndarray):
+                    converted_user[key] = value.tolist()  # Convert numpy array to list
+                else:
+                    converted_user[key] = value
+            converted_users.append(converted_user)
+
+        # Prepare data for JSON
+        data = {
+            "timestamp": datetime.now().isoformat(),
+            "total_addresses": len(analyzed_users),
+            "clusters": cluster_data,
+            "category_distribution": converted_distribution,
+            "visualization_data": {
+                "nodes": nodes_data,
+                "links": links_data
+            },
+            "event_outputs": event_outputs,  # Add new event outputs section
+            "documentation": documentation,  # Add documentation to the JSON
+            "analyzed_users": converted_users  # Include full user analysis data with proper Python types
+        }
+
+        # Save timestamped file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = os.path.join(results_dir, f"results_{timestamp}.json")
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        # Save latest.json
+        latest_file = os.path.join(results_dir, "latest.json")
+        with open(latest_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        print(f"\nResults saved to {filename} and {latest_file}")
+        return True
+
+        except Exception as e:
+        print(f"\nError saving results: {str(e)}")
+        import traceback
+        traceback.print_exc()  # Print full traceback for debugging
+        return False
+
 def main():
-    """
-    Main function to demonstrate the usage of EthereumAddressClusterer
-    with dynamically fetched addresses and end user prediction
-    """
-    
-    # Get API key from environment variable
-    api_key = os.getenv('ETHERSCAN_API_KEY')
+    """Main function to run the end user analysis"""
+    api_key = os.getenv("ETHERSCAN_API_KEY")
     if not api_key:
         print("Error: ETHERSCAN_API_KEY environment variable not set")
-        print("Please create a .env file with your Etherscan API key:")
-        print("ETHERSCAN_API_KEY=your_api_key_here")
         return
+
+    print("\nValidating API key...")
+    clusterer = EthereumAddressClusterer(api_key)
+    print("API key validated successfully!")
+
+    print("\nFetching addresses from recent transactions...")
+    fetcher = AddressFetcher(api_key)
+    addresses = []
+    addresses.extend(fetcher.get_exchange_addresses(3))
+    addresses.extend(fetcher.get_defi_addresses(3))
+    addresses.extend(fetcher.get_nft_addresses(3))
+    addresses.extend(fetcher.get_individual_addresses(11))
+
+    print(f"\nAnalyzing {len(addresses)} unique addresses...")
+
+    print("\nStarting clustering analysis...")
+    clusters = clusterer.cluster_addresses(addresses)
     
-    try:
-        # Test API key validity first
-        fetcher = AddressFetcher(api_key)
-        test_params = {
-            'module': 'account',
-            'action': 'balance',
-            'address': '0x0000000000000000000000000000000000000000'
-        }
-        if not fetcher._make_api_request(test_params):
-            print("Failed to validate API key. Please check your Etherscan API key.")
-            return
-            
-        print("API key validated successfully!")
-        
-        # Initialize clusterer
-        clusterer = EthereumAddressClusterer(api_key)
-        
-        # Fetch addresses from different categories - INCREASED TO FETCH 50 TOTAL ADDRESSES
-        print("\nFetching addresses from recent transactions...")
-        
-        addresses = {
-            'exchanges': fetcher.get_exchange_addresses(13),    # Increased to get 13 addresses
-            'defi': fetcher.get_defi_addresses(13),            # Increased to get 13 addresses
-            'nft': fetcher.get_nft_addresses(12),              # Increased to get 12 addresses
-            'individuals': fetcher.get_individual_addresses(12) # Increased to get 12 addresses
-        }
-        
-        # Check if we got enough addresses
-        total_addresses = sum(len(addrs) for addrs in addresses.values())
-        if total_addresses == 0:
-            raise Exception("Failed to fetch any addresses")
-        
-        # Flatten addresses and remove duplicates
-        all_addresses = list(set([
-            addr for category in addresses.values() 
-            for addr in category if addr  # Filter out None values
-        ]))
-        
-        # Limit to 50 unique addresses if we have more
-        if len(all_addresses) > 50:
-            all_addresses = all_addresses[:50]
-        
-        print(f"\nAnalyzing {len(all_addresses)} unique addresses...")
-        
-        # Perform clustering analysis with optimized parameters
-        print("\nStarting clustering analysis...")
-        try:
-            # Refined clustering parameters based on dataset
-            clusters = clusterer.cluster_addresses(all_addresses, eps=0.45, min_samples=2)
-        except Exception as e:
-            print(f"Clustering operation failed: {str(e)}. Using a simplified clustering approach.")
-            # Fallback to a simplified clustering
-            clusters = {0: all_addresses[:len(all_addresses)//2], 
-                       1: all_addresses[len(all_addresses)//2:]}
-        
-        # Print clustering results with category labels
         print("\nClustering Results:")
-        for cluster_id, cluster_addresses in clusters.items():
-            if cluster_id == -1:
-                print("\nNoise/Outliers (addresses that don't fit in any cluster):")
-            else:
+    for cluster_id, cluster in clusters.items():
                 print(f"\nCluster {cluster_id}:")
-            
-            for address in cluster_addresses:
-                category = "Unknown"
-                for cat, addrs in addresses.items():
-                    if address and addrs and address.lower() in [a.lower() for a in addrs if a]:
-                        category = cat.capitalize()
-                        break
-                print(f"  {address} ({category})")
-        
-        # Build and analyze transaction graph
+        for addr in cluster:
+            print(f"  {addr}")
+
         print("\nBuilding transaction graph...")
-        try:
-            clusterer.build_transaction_graph(all_addresses)
-        except Exception as e:
-            print(f"Transaction graph building failed: {str(e)}. Using a simplified graph.")
-            # Build a simplified graph
-            clusterer.transaction_graph = nx.Graph()
-            for addr in all_addresses:
-                clusterer.transaction_graph.add_node(addr)
-            # Add some edges between addresses in the same cluster
-            for cluster_addrs in clusters.values():
-                if len(cluster_addrs) > 1:
-                    for i in range(len(cluster_addrs) - 1):
-                        clusterer.transaction_graph.add_edge(cluster_addrs[i], cluster_addrs[i+1])
-        
-        # Print graph statistics
-        print("\nTransaction Graph Statistics:")
-        print(f"Number of unique addresses (nodes): {clusterer.transaction_graph.number_of_nodes()}")
-        print(f"Number of transactions (edges): {clusterer.transaction_graph.number_of_edges()}")
-        
-        # After clustering analysis, initialize and train the predictor
+    clusterer.build_transaction_graph(addresses)
+    
+    # Print basic graph statistics
+    n_nodes = len(clusterer.transaction_graph.nodes())
+    n_edges = len(clusterer.transaction_graph.edges())
+    print(f"\nTransaction Graph Statistics:")
+    print(f"Number of unique addresses (nodes): {n_nodes}")
+    print(f"Number of transactions (edges): {n_edges}")
+
         print("\nInitializing End User Predictor...")
         predictor = EndUserPredictor(clusterer.transaction_graph, clusters)
         
-        # Use all addresses from graph - up to 50 for processing
-        address_list = list(clusterer.transaction_graph.nodes())
-        if len(address_list) > 50:
-            address_list = address_list[:50]
-        
         print("\nTraining machine learning models...")
-        try:
-            predictor.train_isolation_forest(address_list)
-            predictor.train_random_forest(address_list)
-        except Exception as e:
-            print(f"Model training failed: {str(e)}. Using default models.")
-            # Create default models
-            predictor.isolation_forest = IsolationForest(contamination=0.1, random_state=42)
-            predictor.random_forest = RandomForestClassifier(random_state=42)
-            # Fit with minimal data
-            features = predictor.extract_features(address_list[:5])
-            if features.shape[0] > 0:
-                predictor.isolation_forest.fit(features)
-                predictor.random_forest.fit(features, [0] * features.shape[0])
-        
-        # Add XGBoost training if available
-        try:
-            # More robust XGBoost checking
-            xgboost_available = False
-            
-            # First try direct import
-            try:
-                import xgboost
-                xgboost_available = True
-            except ImportError:
-                # Try with importlib if direct import fails
-                try:
-                    import importlib.util
-                    xgboost_spec = importlib.util.find_spec("xgboost")
-                    xgboost_available = (xgboost_spec is not None)
-                except Exception:
-                    xgboost_available = False
-            
-            if not xgboost_available:
-                print("XGBoost is not installed. Using other models only.")
-            else:
-                print("XGBoost found. Attempting to train XGBoost model...")
-                try:
-                    predictor.train_xgboost(address_list)
-                except Exception as train_error:
-                    print(f"XGBoost training failed: {str(train_error)}. Using other models only.")
-        except Exception as e:
-            print(f"Error checking for XGBoost: {str(e)}. Using other models only.")
-        
-        print("\nAnalyzing all addresses...")
-        # Analyze all addresses in the list (up to 50)
-        sample_addresses = address_list  # Analyze all addresses
+    predictor.train_isolation_forest(addresses)
+    predictor.train_random_forest(addresses)
+
+    print("\nAnalyzing all addresses...")
         analyzed_users = []
-        for address in sample_addresses:
-            # Get detailed user profile
-            try:
-                user_profile = predictor.identify_end_user(address)
-                analyzed_users.append(user_profile)
+    total_end_users = 0
+    
+    for i, address in enumerate(addresses, 1):
+        print(f"\rAnalyzing address {i}/{len(addresses)}...", end="")
+        result = predictor.identify_end_user(address)
+        analyzed_users.append(result)
+        if result.get("end_user_likelihood", 0) > 0.7:  # High likelihood threshold
+            total_end_users += 1
+
+    # Calculate category distribution
+    categories = predictor.categorize_addresses(addresses)
+    category_counts = {}
+    for cat in categories:
+        category_counts[str(cat)] = category_counts.get(str(cat), 0) + 1
+
+    print(f"\n\nLikely end users identified: {total_end_users} ({(total_end_users/len(addresses))*100:.1f}%)")
                 
-                # Print detailed information
-                print(f"\n{'='*60}")
-                print(f"ADDRESS: {address}")
-                print(f"{'='*60}")
-                print(f"USER CATEGORY: {user_profile['user_category_name']} (Category {user_profile['user_category']})")
-                print(f"CONFIDENCE: {user_profile['confidence']:.2f}")
-                
-                # Print end user likelihood
-                if 'end_user_likelihood' in user_profile:
-                    end_user_text = "HIGH" if user_profile['end_user_likelihood'] > 0.7 else (
-                        "MEDIUM" if user_profile['end_user_likelihood'] > 0.4 else "LOW")
-                    print(f"END USER LIKELIHOOD: {user_profile['end_user_likelihood']:.2f} ({end_user_text})")
-                
-                print(f"PROFILE ID: {user_profile.get('user_profile_id', 'N/A')}")
-                print(f"ANOMALY: {'Yes' if user_profile.get('is_anomaly', False) else 'No'}")
-                
-                # Print confidence factors if available
-                if 'confidence_factors' in user_profile:
-                    print("\nCONFIDENCE BREAKDOWN:")
-                    for factor, value in user_profile['confidence_factors'].items():
-                        print(f"  - {factor}: {value:.2f}")
-                
-                # Print investment destinations
-                if user_profile.get('investments'):
-                    print("\nINVESTMENT DESTINATIONS:")
-                    for destination, weight in user_profile['investments'].items():
-                        print(f"  - {destination}: {weight:.2%}")
-                else:
-                    print("\nINVESTMENT DESTINATIONS: None detected")
-                    
-                # Print suspicious activities
-                if user_profile.get('suspicious_activities'):
-                    print("\nSUSPICIOUS ACTIVITIES:")
-                    for activity in user_profile['suspicious_activities']:
-                        print(f"  - {activity['description']} (Confidence: {activity['confidence']:.2f})")
-                else:
-                    print("\nSUSPICIOUS ACTIVITIES: None detected")
-                    
-                # Print temporal patterns if available
-                if user_profile.get('temporal_patterns'):
-                    print("\nTEMPORAL PATTERNS:")
-                    for pattern, value in user_profile['temporal_patterns'].items():
-                        print(f"  - {pattern}: {value:.2f}")
-                
-                # Print automated behavior patterns if available
-                if user_profile.get('automated_behavior'):
-                    print("\nAUTOMATED BEHAVIOR PATTERNS:")
-                    for pattern, confidence in user_profile['automated_behavior'].items():
-                        print(f"  - {pattern} (Confidence: {confidence:.2f})")
-                
-                # Print graph metrics if available
-                if user_profile.get('graph_metrics'):
-                    print("\nGRAPH METRICS:")
-                    for metric, value in user_profile['graph_metrics'].items():
-                        print(f"  - {metric}: {value:.4f}")
-                    
-                # Print behavior patterns
-                if user_profile.get('behavior_patterns'):
-                    print("\nBEHAVIOR PATTERNS:")
-                    for pattern, confidence in user_profile['behavior_patterns'].items():
-                        print(f"  - {pattern} (Confidence: {confidence:.2f})")
-                else:
-                    print("\nBEHAVIOR PATTERNS: None detected")
-                    
-                # Print transaction patterns
-                if user_profile.get('transaction_patterns'):
-                    print("\nTRANSACTION PATTERNS:")
-                    patterns = user_profile['transaction_patterns']
-                    print(f"  - Total Transactions: {patterns.get('total_transactions', 'N/A')}")
-                    print(f"  - Unique Counterparties: {patterns.get('unique_counterparties', 'N/A')}")
-                    cluster_id = patterns.get('cluster_id', 'N/A')
-                    print(f"  - Cluster ID: {cluster_id}")
-                    print(f"  - Cluster Info: {patterns.get('cluster_explanation', 'N/A')}")
-                
-                print(f"{'='*60}")
-            except Exception as e:
-                print(f"Error analyzing address {address}: {str(e)}. Skipping to next address.")
-                continue
+    print("\nEND USER CATEGORIES:")
+    category_names = {
+        "0": "Individual/Retail User",
+        "1": "Institutional/Large Investor",
+        "2": "Exchange/Protocol Account",
+        "3": "DeFi User",
+        "4": "NFT Trader"
+    }
+    
+    for cat, count in category_counts.items():
+        name = category_names.get(cat, f"Category {cat}")
+        percentage = (count/len(addresses))*100
+        print(f"  - {name}: {count} ({percentage:.1f}%)")
+
+    # Save results to file
+    save_results(analyzed_users, clusters, category_counts)
+    
+    # Print sample of detailed event outputs for each address
+    print("\n\n📊 DETAILED EVENT OUTPUTS:")
+    print("=" * 80)
+    
+    for i, user in enumerate(analyzed_users):
+        if i > 10:  # Limit to first 10 addresses to avoid overwhelming the terminal
+            break
             
-        # Print summary of end user analysis
-        # Only count actual analyzed addresses, and only those with likelihood > 0.7
-        end_users = [profile for profile in analyzed_users if profile.get('end_user_likelihood', 0) > 0.7]
-        print(f"\n\nEND USER ANALYSIS SUMMARY")
-        print(f"{'='*60}")
-        print(f"Total addresses analyzed: {len(analyzed_users)}")
-        print(f"Likely end users identified: {len(end_users)} ({len(end_users)/max(1,len(analyzed_users))*100:.1f}%)")
+        # Get end user likelihood category
+        likelihood = user.get("end_user_likelihood", 0.0)
+        if likelihood > 0.7:
+            likelihood_category = "HIGH 🟢"
+        elif likelihood > 0.4:
+            likelihood_category = "MEDIUM 🟡"
+                else:
+            likelihood_category = "LOW 🔴"
+            
+        print(f"\n🔍 Address: {user['address']}")
+        print(f"🆔 Profile ID: {user.get('user_profile_id', 'N/A')}")
+        print(f"📋 Category: {user.get('user_category_name', 'Unknown')} (ID: {user.get('user_category', 'N/A')})")
+        print(f"👤 End User Likelihood: {likelihood:.2f} - {likelihood_category}")
+        print(f"🎯 Confidence: {user.get('confidence', 0.0):.2f}")
         
-        # Categorize end users
-        if end_users:
-            end_user_categories = {}
-            for profile in end_users:
-                category = profile.get('user_category_name', 'Unknown')
-                end_user_categories[category] = end_user_categories.get(category, 0) + 1
+        # Print cluster info if available
+        if "transaction_patterns" in user and isinstance(user["transaction_patterns"], dict):
+            cluster_id = user["transaction_patterns"].get("cluster_id", -1)
+            tx_count = user["transaction_patterns"].get("total_transactions", 0)
+            unique_counterparties = user["transaction_patterns"].get("unique_counterparties", 0)
+            print(f"🔄 Transactions: {tx_count} | Unique Counterparties: {unique_counterparties} | Cluster: {cluster_id}")
+            
+        # Print suspicious activities if any
+        if "suspicious_activities" in user and user["suspicious_activities"]:
+            sus_patterns = [a["pattern"] for a in user["suspicious_activities"]]
+            print(f"⚠️ Suspicious Activities: {', '.join(sus_patterns)}")
+            
+        # Print behavior patterns if any
+        if "behavior_patterns" in user and user["behavior_patterns"]:
+            print("🔍 Behavior Patterns:")
+            for pattern, score in user["behavior_patterns"].items():
+                print(f"  • {pattern}: {score:.2f}")
                 
-            print("\nEND USER CATEGORIES:")
-            for category, count in end_user_categories.items():
-                print(f"  - {category}: {count} ({count/len(end_users)*100:.1f}%)")
+        # Print automated behavior if any
+        if "automated_behavior" in user and user["automated_behavior"]:
+            print("🤖 Automated Behavior:")
+            for pattern, score in user["automated_behavior"].items():
+                print(f"  • {pattern}: {score:.2f}")
+                
+        print("-" * 80)
         
-    except Exception as e:
-        print(f"\nError: {str(e)}")
-        print("Please check your API key and internet connection.")
+    print("\n📁 Complete analysis saved to JSON files in the 'results' directory.")
 
 if __name__ == "__main__":
     main()
