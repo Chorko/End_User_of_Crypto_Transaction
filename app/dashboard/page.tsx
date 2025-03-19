@@ -129,7 +129,7 @@ export default function DashboardPage() {
                       Show end users only
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem>
-                      Show high confidence (>0.8)
+                      Show high confidence ({'>'}0.8)
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem>
                       Show medium confidence (0.5-0.8)
