@@ -9,7 +9,34 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-import { Transaction, mockTransactions } from "./mock-data"
+// Define the Transaction interface to replace the import
+interface Transaction {
+  id: string
+  from: string
+  to: string
+  amount: string
+  token: string
+  timestamp: string
+  status: "confirmed" | "pending" | "failed"
+  details?: {
+    gasUsed?: string
+    gasPrice?: string
+    blockNumber?: string
+    nonce?: string
+  }
+  endUserData?: {
+    address: string
+    user_profile_id: number
+    user_category: number
+    user_category_name: string
+    end_user_likelihood: number
+    confidence: number
+    is_anomaly: boolean
+    cluster_id?: number
+    behavior_patterns?: Record<string, number>
+    suspicious_patterns?: string[]
+  }
+}
 
 interface TransactionRowProps {
   transaction: Transaction
@@ -223,21 +250,22 @@ export function TransactionTable({
       try {
         // Fetch transactions
         const transactionResponse = await fetch('/api/transactions')
-        let transactionData = []
-        
-        if (transactionResponse.ok) {
-          transactionData = await transactionResponse.json()
-        } else {
-          // If API fails, use mock data
-          transactionData = mockTransactions
+        if (!transactionResponse.ok) {
+          console.error("Error fetching transactions:", await transactionResponse.text())
+          setLoadingData(false)
+          return
         }
+        
+        let transactionData = await transactionResponse.json()
         
         // If we need end user information, fetch and integrate it
         if (showEndUserInfo) {
           try {
             const endUserResponse = await fetch('/api/results')
             if (endUserResponse.ok) {
-              const endUserData = await endUserResponse.json()
+              const allResults = await endUserResponse.json()
+              // Use the most recent result (last item in array)
+              const endUserData = allResults[allResults.length - 1]
               
               // Combine data
               if (endUserData.event_outputs) {
@@ -249,7 +277,7 @@ export function TransactionTable({
                     ...tx,
                     endUserData: endUser ? {
                       ...endUser,
-                      user_category_name: endUser.category || "Unknown"
+                      user_category_name: endUser.category || endUser.user_category_name || "Unknown"
                     } : undefined
                   }
                 })
@@ -263,8 +291,6 @@ export function TransactionTable({
         setTransactions(transactionData)
       } catch (error) {
         console.error("Error fetching transaction data:", error)
-        // Use mock data if API fails
-        setTransactions(mockTransactions)
       } finally {
         // Simulate a loading delay
         setTimeout(() => {

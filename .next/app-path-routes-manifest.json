@@ -1,7 +1,7 @@
 {
+  "/api/transactions/route": "/api/transactions",
   "/_not-found/page": "/_not-found",
   "/api/results/route": "/api/results",
-  "/api/transactions/route": "/api/transactions",
   "/dashboard/page": "/dashboard",
   "/page": "/"
 }

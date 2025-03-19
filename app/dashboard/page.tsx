@@ -13,7 +13,6 @@ import { TransactionStats } from "./transaction-stats"
 import { AnalysisResults } from "./analysis-results"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { mockAnalysisResults } from "./mock-data"
 import { Badge } from "@/components/ui/badge"
 
 export default function DashboardPage() {
@@ -29,20 +28,19 @@ export default function DashboardPage() {
     // Fetch analysis results
     const fetchData = async () => {
       try {
-        // Try to fetch from API first
-        let data;
-        try {
-          const response = await fetch('/api/results')
-          if (response.ok) {
-            data = await response.json()
-          } else {
-            // Use mock data if API fails
-            data = mockAnalysisResults
-          }
-        } catch (error) {
-          console.error("Error fetching from API, using mock data:", error)
-          data = mockAnalysisResults
+        // Fetch from API
+        const response = await fetch('/api/results')
+        if (!response.ok) {
+          console.error("API error:", await response.text())
+          setIsLoading(false)
+          return
         }
+        
+        // Get all results (array)
+        const allResults = await response.json()
+        
+        // Use the most recent result (last item in array)
+        const data = allResults[allResults.length - 1]
         
         // Calculate end users count
         const endUsers = data.event_outputs?.filter((user: any) => 
