@@ -9,6 +9,18 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+// Helper function to get colors based on category
+function getCategoryColor(category: number): string {
+  switch (category) {
+    case 0: return "border-indigo-500 text-indigo-500 bg-indigo-500/10";
+    case 1: return "border-pink-500 text-pink-500 bg-pink-500/10";
+    case 2: return "border-purple-500 text-purple-500 bg-purple-500/10";
+    case 3: return "border-teal-500 text-teal-500 bg-teal-500/10";
+    case 4: return "border-cyan-500 text-cyan-500 bg-cyan-500/10";
+    default: return "border-gray-500 text-gray-500 bg-gray-500/10";
+  }
+}
+
 // Define the Transaction interface to replace the import
 interface Transaction {
   id: string
@@ -70,8 +82,16 @@ function TransactionRow({ transaction, isLoading = false, expanded = false, onEx
           <div className="flex flex-col">
             <span>{transaction.from.substring(0, 8)}...</span>
             {transaction.endUserData && (
-              <Badge variant="outline" className="mt-1 w-fit">
-                {transaction.endUserData.user_category_name || "Unknown"}
+              <Badge 
+                variant={transaction.endUserData.end_user_likelihood > 0.7 ? "default" : "outline"} 
+                className={`mt-1 w-fit ${getCategoryColor(transaction.endUserData.user_category)}`}
+              >
+                {transaction.endUserData.user_category_name || 
+                 (transaction.endUserData.user_category === 0 ? "Individual" : 
+                  transaction.endUserData.user_category === 1 ? "Institutional" :
+                  transaction.endUserData.user_category === 2 ? "Exchange" :
+                  transaction.endUserData.user_category === 3 ? "DeFi User" :
+                  transaction.endUserData.user_category === 4 ? "NFT Trader" : "Unknown")}
               </Badge>
             )}
           </div>
@@ -245,69 +265,63 @@ export function TransactionTable({
   
   // Update useEffect to fetch transactions and end user data
   useEffect(() => {
-    const fetchData = async () => {
-      setLoadingData(true)
+    const fetchTransactions = async () => {
       try {
-        // Fetch transactions
-        const transactionResponse = await fetch('/api/transactions')
-        if (!transactionResponse.ok) {
-          console.error("Error fetching transactions:", await transactionResponse.text())
-          setLoadingData(false)
-          return
+        const response = await fetch('/api/results')
+        if (!response.ok) {
+          throw new Error('Failed to fetch transactions')
         }
+        const allResults = await response.json()
         
-        let transactionData = await transactionResponse.json()
+        // Use the most recent result
+        const latestResult = allResults[allResults.length - 1]
         
-        // If we need end user information, fetch and integrate it
-        if (showEndUserInfo) {
-          try {
-            const endUserResponse = await fetch('/api/results')
-            if (endUserResponse.ok) {
-              const allResults = await endUserResponse.json()
-              // Use the most recent result (last item in array)
-              const endUserData = allResults[allResults.length - 1]
-              
-              // Combine data
-              if (endUserData.event_outputs) {
-                transactionData = transactionData.map((tx: Transaction) => {
-                  const endUser = endUserData.event_outputs.find(
-                    (user: any) => user.address.toLowerCase() === tx.from.toLowerCase()
-                  )
-                  return {
-                    ...tx,
-                    endUserData: endUser ? {
-                      ...endUser,
-                      user_category_name: endUser.category || endUser.user_category_name || "Unknown"
-                    } : undefined
-                  }
-                })
-              }
-            }
-          } catch (error) {
-            console.error("Error fetching end user data:", error)
+        // Convert event outputs to transactions
+        const transactions = latestResult.event_outputs?.map((event: any) => ({
+          id: event.address,
+          from: event.address,
+          to: event.address, // Since we don't have actual transaction data, use same address
+          amount: event.total_transactions?.toString() || "0", // Use total_transactions if available
+          token: "ETH", // Placeholder
+          timestamp: latestResult.timestamp,
+          status: "confirmed",
+          endUserData: {
+            address: event.address,
+            user_profile_id: event.user_profile_id,
+            user_category: event.user_category,
+            user_category_name: event.user_category_name, // Use user_category_name instead of category
+            end_user_likelihood: event.end_user_likelihood,
+            confidence: event.confidence,
+            is_anomaly: event.is_anomaly,
+            cluster_id: event.cluster_id,
+            behavior_patterns: event.behavior_patterns,
+            suspicious_patterns: event.suspicious_patterns
           }
-        }
+        })) || []
         
-        setTransactions(transactionData)
-      } catch (error) {
-        console.error("Error fetching transaction data:", error)
+        setTransactions(transactions)
+        setFilteredTransactions(transactions)
+      } catch (err) {
+        console.error("Error fetching transaction data:", err instanceof Error ? err.message : 'Failed to load transactions')
       } finally {
-        // Simulate a loading delay
-        setTimeout(() => {
-          setLoadingData(false)
-        }, 1000)
+        setLoadingData(false)
       }
     }
-    
-    fetchData()
-  }, [showEndUserInfo])
+
+    fetchTransactions()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchTransactions, 30000)
+    return () => clearInterval(interval)
+  }, [])
   
   // Filter transactions based on filterByEndUsers prop
   useEffect(() => {
     if (filterByEndUsers) {
       setFilteredTransactions(
         transactions.filter(tx => 
-          tx.endUserData && tx.endUserData.end_user_likelihood > 0.5
+          tx.endUserData && 
+          tx.endUserData.end_user_likelihood > 0.5 && 
+          tx.endUserData.confidence > 0.5
         )
       )
     } else {

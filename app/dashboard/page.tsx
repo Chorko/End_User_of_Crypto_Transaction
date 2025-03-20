@@ -42,24 +42,56 @@ export default function DashboardPage() {
         // Use the most recent result (last item in array)
         const data = allResults[allResults.length - 1]
         
-        // Calculate end users count
+        // Extract category distribution from visualization data if available
+        let categoryDistribution = {}
+        if (data.visualization_data?.nodes) {
+          // Group nodes by their label/category
+          categoryDistribution = data.visualization_data.nodes.reduce((acc: Record<string, number>, node: any) => {
+            if (node.label) {
+              acc[node.label] = (acc[node.label] || 0) + 1
+            }
+            return acc
+          }, {})
+        }
+        
+        // Calculate end users count - count users with end_user_likelihood above 0.5
         const endUsers = data.event_outputs?.filter((user: any) => 
-          user.end_user_likelihood > 0.7
+          user.end_user_likelihood > 0.5
         ).length || 0
+        
+        // Calculate clusters count - exclude outlier cluster (-1)
+        const clusters = data.clusters?.filter((cluster: any) => 
+          cluster.id !== "-1"
+        ).length || 0
+        
+        // Get documentation if available, for better category names
+        const categoryNames = data.documentation?.user_categories || {}
+        
+        // Format category distribution for better display
+        const formattedDistribution = Object.entries(categoryDistribution).reduce((acc, [key, value]) => {
+          // Try to find a better name from documentation
+          let displayName = key
+          for (const [catId, info] of Object.entries(categoryNames)) {
+            if (typeof info === 'object' && info.name === key) {
+              displayName = info.name
+              break
+            }
+          }
+          acc[displayName] = value
+          return acc
+        }, {} as Record<string, number>)
         
         setStatsData({
           total_addresses: data.total_addresses || 0,
           total_end_users: endUsers,
-          total_clusters: (data.clusters?.length || 0) - 1, // Exclude outlier cluster (-1)
-          category_distribution: data.category_distribution || {}
+          total_clusters: clusters,
+          category_distribution: formattedDistribution
         })
-      } catch (error) {
-        console.error("Error processing data:", error)
-      } finally {
-        // Simulate loading time
-        setTimeout(() => {
-          setIsLoading(false)
-        }, 1000)
+
+        setIsLoading(false)
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setIsLoading(false)
       }
     }
     
@@ -207,22 +239,34 @@ export default function DashboardPage() {
                     ) : (
                       <div className="h-[200px] flex items-center justify-center bg-gradient-to-r from-indigo-900/20 to-purple-900/20 rounded-md overflow-hidden relative">
                         <div className="flex justify-between items-end w-full h-full px-8 pb-6 pt-2">
-                          <div className="flex flex-col items-center">
-                            <div className="h-32 w-12 bg-indigo-500 rounded-t-md"></div>
-                            <div className="mt-2 text-xs">Individual</div>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <div className="h-24 w-12 bg-purple-500 rounded-t-md"></div>
-                            <div className="mt-2 text-xs">Trader</div>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <div className="h-16 w-12 bg-blue-500 rounded-t-md"></div>
-                            <div className="mt-2 text-xs">Business</div>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <div className="h-20 w-12 bg-cyan-500 rounded-t-md"></div>
-                            <div className="mt-2 text-xs">Developer</div>
-                          </div>
+                          {Object.entries(statsData.category_distribution)
+                            .filter(([category]) => 
+                              // Only include end user categories (not exchanges)
+                              !category.toLowerCase().includes('exchange') && 
+                              !category.toLowerCase().includes('protocol')
+                            )
+                            .map(([category, count], index) => {
+                              const colors = [
+                                'bg-indigo-500', 
+                                'bg-purple-500', 
+                                'bg-cyan-500', 
+                                'bg-teal-500'
+                              ];
+                              // Calculate height based on proportion
+                              const maxHeight = 160; // Max bar height in pixels
+                              const maxCount = Math.max(...Object.values(statsData.category_distribution) as number[]);
+                              const height = maxCount > 0 ? Math.max(20, (count as number / maxCount) * maxHeight) : 20;
+                              
+                              return (
+                                <div key={category} className="flex flex-col items-center">
+                                  <div 
+                                    className={`w-12 ${colors[index % colors.length]} rounded-t-md`}
+                                    style={{ height: `${height}px` }}
+                                  ></div>
+                                  <div className="mt-2 text-xs">{category}</div>
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     )}
@@ -238,8 +282,8 @@ export default function DashboardPage() {
                     ) : (
                       <div className="h-[200px] flex items-center justify-center bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-md overflow-hidden relative">
                         <div className="absolute inset-0 flex flex-col justify-center items-center">
-                          <div className="text-4xl font-bold text-green-400">87%</div>
-                          <div className="text-sm text-green-300 mt-2">Average confidence</div>
+                          <div className="text-4xl font-bold text-green-400">{Math.round((statsData.total_end_users / Math.max(statsData.total_addresses, 1)) * 100)}%</div>
+                          <div className="text-sm text-green-300 mt-2">End user probability</div>
                         </div>
                         <div className="absolute bottom-0 w-full h-1/2 flex">
                           <div className="w-[40%] h-full bg-green-500/20 flex items-center justify-center">
@@ -334,31 +378,28 @@ export default function DashboardPage() {
                           <div className="w-48 h-48 rounded-full border-8 border-background relative flex items-center justify-center">
                             <div className="absolute inset-0 border-8 border-r-indigo-500 border-transparent rounded-full rotate-45"></div>
                             <div className="absolute inset-0 border-8 border-t-purple-500 border-transparent rounded-full -rotate-15"></div>
-                            <div className="absolute inset-0 border-8 border-l-blue-500 border-transparent rounded-full rotate-90"></div>
-                            <div className="absolute inset-0 border-8 border-b-green-500 border-transparent rounded-full rotate-200"></div>
+                            <div className="absolute inset-0 border-8 border-l-teal-500 border-transparent rounded-full rotate-90"></div>
+                            <div className="absolute inset-0 border-8 border-b-cyan-500 border-transparent rounded-full rotate-200"></div>
                             <div className="text-center text-sm">
-                              <div className="font-bold">1,245</div>
+                              <div className="font-bold">{statsData.total_addresses.toLocaleString()}</div>
                               <div className="text-xs text-muted-foreground">Total</div>
                             </div>
                           </div>
                         </div>
-                        <div className="absolute bottom-4 w-full flex justify-around text-xs">
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 bg-indigo-500 mr-2 rounded-full"></div>
-                            <span>Individual (42%)</span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 bg-purple-500 mr-2 rounded-full"></div>
-                            <span>Trader (28%)</span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 bg-blue-500 mr-2 rounded-full"></div>
-                            <span>Business (15%)</span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 bg-green-500 mr-2 rounded-full"></div>
-                            <span>Developer (15%)</span>
-                          </div>
+                        <div className="absolute bottom-4 w-full flex justify-around text-xs flex-wrap gap-2 px-2">
+                          {Object.entries(statsData.category_distribution).map(([category, count], index) => {
+                            const colors = ['bg-indigo-500', 'bg-purple-500', 'bg-teal-500', 'bg-cyan-500', 'bg-pink-500'];
+                            const percentage = statsData.total_addresses > 0 
+                              ? Math.round((count as number / statsData.total_addresses) * 100) 
+                              : 0;
+                              
+                            return (
+                              <div key={category} className="flex items-center">
+                                <div className={`w-3 h-3 ${colors[index % colors.length]} mr-2 rounded-full`}></div>
+                                <span>{category} ({percentage}%)</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

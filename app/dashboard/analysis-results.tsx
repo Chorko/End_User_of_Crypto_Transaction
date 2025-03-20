@@ -41,8 +41,53 @@ export function AnalysisResults() {
         if (!response.ok) {
           throw new Error('Failed to fetch results')
         }
-        const data = await response.json()
-        setResults(data)
+        const allResults = await response.json()
+        
+        // Use the most recent result
+        const latestResult = allResults[allResults.length - 1]
+        
+        // Extract category distribution from visualization data if available
+        let categoryDistribution = {}
+        if (latestResult.visualization_data?.nodes) {
+          // Group nodes by their label/category
+          categoryDistribution = latestResult.visualization_data.nodes.reduce((acc: Record<string, number>, node: any) => {
+            if (node.label) {
+              acc[node.label] = (acc[node.label] || 0) + 1
+            }
+            return acc
+          }, {})
+        }
+        
+        // Get documentation if available
+        const categoryNames = latestResult.documentation?.user_categories || {}
+        
+        // Format category distribution for better display
+        const formattedDistribution = Object.entries(categoryDistribution).reduce((acc, [key, value]) => {
+          // Try to find a better name from documentation
+          let displayName = key
+          for (const [catId, info] of Object.entries(categoryNames)) {
+            if (typeof info === 'object' && (info as any).name === key) {
+              displayName = (info as any).name
+              break
+            }
+          }
+          acc[displayName] = value
+          return acc
+        }, {} as Record<string, number>)
+        
+        // Filter out outlier cluster (-1)
+        const filteredClusters = latestResult.clusters?.filter((cluster: any) => 
+          cluster.id !== "-1"
+        ) || []
+        
+        // Format result for display
+        setResults({
+          timestamp: latestResult.timestamp,
+          total_addresses: latestResult.total_addresses,
+          clusters: filteredClusters,
+          category_distribution: formattedDistribution,
+          visualization_data: latestResult.visualization_data || { nodes: [], links: [] }
+        })
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load results')
       } finally {
@@ -126,33 +171,41 @@ export function AnalysisResults() {
           {/* Category Distribution */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Category Distribution</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(results.category_distribution).map(([category, count]) => (
-                <div key={category} className="flex items-center justify-between">
-                  <span className="text-sm">{category}</span>
-                  <Badge variant="secondary">{count}</Badge>
-                </div>
-              ))}
-            </div>
+            {Object.keys(results.category_distribution).length > 0 ? (
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(results.category_distribution).map(([category, count]) => (
+                  <div key={category} className="flex items-center justify-between">
+                    <span className="text-sm">{category}</span>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No category data available</div>
+            )}
           </div>
 
           {/* Clusters */}
           <div>
             <h3 className="text-lg font-semibold mb-2">Clusters</h3>
-            <div className="space-y-4">
-              {results.clusters.map((cluster) => (
-                <div key={cluster.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">Cluster {cluster.id}</span>
-                    <Badge>{cluster.size} addresses</Badge>
+            {results.clusters.length > 0 ? (
+              <div className="space-y-4">
+                {results.clusters.map((cluster) => (
+                  <div key={cluster.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">Cluster {cluster.id}</span>
+                      <Badge>{cluster.size} addresses</Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Sample addresses: {cluster.addresses.slice(0, 3).join(", ")}
+                      {cluster.addresses.length > 3 && "..."}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Sample addresses: {cluster.addresses.slice(0, 3).join(", ")}
-                    {cluster.addresses.length > 3 && "..."}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No clusters available</div>
+            )}
           </div>
 
           {/* Last Updated */}

@@ -1777,6 +1777,10 @@ def save_results(analyzed_users, clusters, category_distribution):
         cluster_data = []
         for i, cluster in clusters.items():
             try:
+                # Skip empty clusters
+                if not cluster or (hasattr(cluster, "__len__") and len(cluster) == 0):
+                    continue
+                    
                 cluster_data.append({
                     "id": str(i),
                     "size": len(cluster) if hasattr(cluster, "__len__") else 1,
@@ -1793,7 +1797,7 @@ def save_results(analyzed_users, clusters, category_distribution):
 
         # Safely extract node data
         nodes_data = []
-        for user in analyzed_users[:50]:  # Limit to 50 nodes for visualization
+        for user in analyzed_users:  # Remove the [:50] limit to include all nodes
             try:
                 node = {
                     "id": user["address"],
@@ -1814,21 +1818,76 @@ def save_results(analyzed_users, clusters, category_distribution):
 
         # Safely extract link data
         links_data = []
-        for user in analyzed_users[:50]:
+
+        # First, add links from the existing counterparties
+        for user in analyzed_users:
             try:
                 # Only add links if we have counterparties
                 if "transaction_patterns" in user and isinstance(user["transaction_patterns"], dict):
                     counterparties = user["transaction_patterns"].get("unique_counterparties")
                     if counterparties and hasattr(counterparties, "__iter__"):
-                        # Get the first counterparty safely
-                        target = next(iter(counterparties), user["address"])
-                        links_data.append({
-                            "source": user["address"],
-                            "target": target,
-                            "value": 1
-                        })
+                        # Get up to 3 counterparties to avoid overwhelming the visualization
+                        for i, target in enumerate(counterparties):
+                            if i >= 3:  # Limit to 3 links per address
+                                break
+                            links_data.append({
+                                "source": user["address"],
+                                "target": target,
+                                "value": 1
+                            })
             except Exception as link_error:
                 print(f"Error processing link: {str(link_error)}")
+
+        # Then, ensure nodes in the same cluster are connected
+        user_addresses = [user["address"] for user in analyzed_users]
+        address_to_cluster = {}
+
+        # Map addresses to their clusters
+        for user in analyzed_users:
+            if "transaction_patterns" in user and isinstance(user["transaction_patterns"], dict):
+                cluster_id = user["transaction_patterns"].get("cluster_id")
+                if cluster_id is not None:
+                    address_to_cluster[user["address"]] = int(cluster_id)
+
+        # Group by clusters
+        cluster_to_addresses = {}
+        for addr, cluster_id in address_to_cluster.items():
+            if cluster_id not in cluster_to_addresses:
+                cluster_to_addresses[cluster_id] = []
+            cluster_to_addresses[cluster_id].append(addr)
+
+        # Connect nodes in the same cluster if they aren't already
+        for cluster_id, addresses in cluster_to_addresses.items():
+            if cluster_id == -1 or len(addresses) <= 1:  # Skip outlier cluster or single-node clusters
+                continue
+                
+            # Sort addresses by their transaction count if available
+            sorted_addresses = sorted(
+                addresses,
+                key=lambda addr: next(
+                    (int(user.get("transaction_patterns", {}).get("total_transactions", 0)) 
+                     for user in analyzed_users if user["address"] == addr), 
+                    0
+                ),
+                reverse=True
+            )
+            
+            # Use the first address (highest transaction count) as a hub
+            hub_address = sorted_addresses[0]
+            
+            # Connect other addresses to the hub
+            for addr in sorted_addresses[1:]:
+                # Check if this link already exists
+                if not any(
+                    (link["source"] == hub_address and link["target"] == addr) or
+                    (link["source"] == addr and link["target"] == hub_address)
+                    for link in links_data
+                ):
+                    links_data.append({
+                        "source": hub_address,
+                        "target": addr,
+                        "value": 2  # Stronger connection for cluster links
+                    })
 
         # NEW: Create event outputs section with key metrics for each address
         event_outputs = []

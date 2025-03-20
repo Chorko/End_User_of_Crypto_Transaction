@@ -1,0 +1,1445 @@
+{
+  "timestamp": "2025-03-20T10:56:44.739661",
+  "total_addresses": 20,
+  "clusters": [
+    {
+      "id": "-1",
+      "size": 7,
+      "addresses": [
+        "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+        "0x28c6c06298d514db089934071355e5743bf21d60",
+        "0x08d64d365bf7bf47869e0e5e95ef07bfeba6152a",
+        "0xe37f7c80ced04c4f243c0fd04a5510d663cb88b5",
+        "0xe8832a868c091263ed190a9f4be304a03895dd91",
+        "0x1b988a9bf09a452bf60c139a116580cbcb84bdfb",
+        "0x264bd8291fae1d75db2c5f573b07faa6715997b5"
+      ]
+    },
+    {
+      "id": "0",
+      "size": 13,
+      "addresses": [
+        "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "0xcaf743899ef72c0bad4148e3a7fcb53b0f70e5b1",
+        "0x012b0b539007d424510441e69c6cf6641bf7afed",
+        "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+        "0xfe82ac4e7cc0488664192fb4b7b2d5d3a472c90d",
+        "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+        "0xf94e86500b2410399bbeb4d6bb9944131ebffc64",
+        "0xf36a830bcafd532a54ae5a0303e0d29ef7de074e",
+        "0x45fdc35c5a99179bf93dbf7a0712b6d5e8d1f3f8",
+        "0x6d6a396293a753ff22d804382cfe4f7c731c94cf",
+        "0x91c8a7e5f6ab8d664b5afba88212a9f6ab2cb61b",
+        "0xc69e5b9bdd0d38aea8af0f0c07db25f27e95948e",
+        "0x8900d107b919632aeeec08c2b55fa2a61cfd7a11"
+      ]
+    }
+  ],
+  "category_distribution": {
+    "2": 5,
+    "3": 4,
+    "4": 3,
+    "0": 8
+  },
+  "visualization_data": {
+    "nodes": [
+      {
+        "id": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+        "group": 2,
+        "value": 7179,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "group": 0,
+        "value": 34,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x28c6c06298d514db089934071355e5743bf21d60",
+        "group": 3,
+        "value": 83,
+        "label": "DeFi User"
+      },
+      {
+        "id": "0x08d64d365bf7bf47869e0e5e95ef07bfeba6152a",
+        "group": 2,
+        "value": 113,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0xcaf743899ef72c0bad4148e3a7fcb53b0f70e5b1",
+        "group": 3,
+        "value": 13,
+        "label": "DeFi User"
+      },
+      {
+        "id": "0x012b0b539007d424510441e69c6cf6641bf7afed",
+        "group": 3,
+        "value": 10,
+        "label": "DeFi User"
+      },
+      {
+        "id": "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+        "group": 4,
+        "value": 4,
+        "label": "NFT Trader/Collector"
+      },
+      {
+        "id": "0xfe82ac4e7cc0488664192fb4b7b2d5d3a472c90d",
+        "group": 4,
+        "value": 5,
+        "label": "NFT Trader/Collector"
+      },
+      {
+        "id": "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+        "group": 4,
+        "value": 2,
+        "label": "NFT Trader/Collector"
+      },
+      {
+        "id": "0xf94e86500b2410399bbeb4d6bb9944131ebffc64",
+        "group": 0,
+        "value": 4,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0xf36a830bcafd532a54ae5a0303e0d29ef7de074e",
+        "group": 0,
+        "value": 5,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0xe37f7c80ced04c4f243c0fd04a5510d663cb88b5",
+        "group": 0,
+        "value": 26,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0xe8832a868c091263ed190a9f4be304a03895dd91",
+        "group": 2,
+        "value": 9743,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x45fdc35c5a99179bf93dbf7a0712b6d5e8d1f3f8",
+        "group": 0,
+        "value": 9,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x6d6a396293a753ff22d804382cfe4f7c731c94cf",
+        "group": 3,
+        "value": 9,
+        "label": "DeFi User"
+      },
+      {
+        "id": "0x91c8a7e5f6ab8d664b5afba88212a9f6ab2cb61b",
+        "group": 0,
+        "value": 22,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0xc69e5b9bdd0d38aea8af0f0c07db25f27e95948e",
+        "group": 0,
+        "value": 3,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x1b988a9bf09a452bf60c139a116580cbcb84bdfb",
+        "group": 2,
+        "value": 32,
+        "label": "Exchange/Protocol Account"
+      },
+      {
+        "id": "0x264bd8291fae1d75db2c5f573b07faa6715997b5",
+        "group": 0,
+        "value": 0,
+        "label": "Individual/Retail User"
+      },
+      {
+        "id": "0x8900d107b919632aeeec08c2b55fa2a61cfd7a11",
+        "group": 0,
+        "value": 0,
+        "label": "Individual/Retail User"
+      }
+    ],
+    "links": [
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x91c8a7e5f6ab8d664b5afba88212a9f6ab2cb61b",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0xcaf743899ef72c0bad4148e3a7fcb53b0f70e5b1",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x012b0b539007d424510441e69c6cf6641bf7afed",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x45fdc35c5a99179bf93dbf7a0712b6d5e8d1f3f8",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x6d6a396293a753ff22d804382cfe4f7c731c94cf",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0xfe82ac4e7cc0488664192fb4b7b2d5d3a472c90d",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0xf36a830bcafd532a54ae5a0303e0d29ef7de074e",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0xf94e86500b2410399bbeb4d6bb9944131ebffc64",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0xc69e5b9bdd0d38aea8af0f0c07db25f27e95948e",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+        "value": 2
+      },
+      {
+        "source": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+        "target": "0x8900d107b919632aeeec08c2b55fa2a61cfd7a11",
+        "value": 2
+      }
+    ]
+  },
+  "event_outputs": [
+    {
+      "address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+      "user_profile_id": 9864255,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "end_user_likelihood": 0.09,
+      "confidence": 0.29,
+      "is_anomaly": false,
+      "cluster_id": -1,
+      "total_transactions": 7179,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "suspicious_patterns": [
+        "high_velocity_small_amounts",
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+      "user_profile_id": 5218090,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.71,
+      "confidence": 0.74,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 34,
+      "behavior_patterns": {
+        "fiat_on_off_ramps": 0.7,
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.65
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+      "user_profile_id": 3541313,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "end_user_likelihood": 0.15,
+      "confidence": 0.35,
+      "is_anomaly": false,
+      "cluster_id": -1,
+      "total_transactions": 83,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x08d64d365bf7bf47869e0e5e95ef07bfeba6152a",
+      "user_profile_id": 6241520,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "end_user_likelihood": 0.15,
+      "confidence": 0.35,
+      "is_anomaly": false,
+      "cluster_id": -1,
+      "total_transactions": 113,
+      "suspicious_patterns": [
+        "high_velocity_small_amounts",
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0xcaf743899ef72c0bad4148e3a7fcb53b0f70e5b1",
+      "user_profile_id": 7835918,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "end_user_likelihood": 0.6,
+      "confidence": 0.8,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 13,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.57,
+        "high_slippage_tolerance": 0.58
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x012b0b539007d424510441e69c6cf6641bf7afed",
+      "user_profile_id": 4565535,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "end_user_likelihood": 0.59,
+      "confidence": 0.79,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 10,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.46,
+        "high_slippage_tolerance": 0.6
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+      "user_profile_id": 7270958,
+      "user_category": 4,
+      "user_category_name": "NFT Trader/Collector",
+      "end_user_likelihood": 0.72,
+      "confidence": 0.86,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 4,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.55,
+        "high_slippage_tolerance": 0.62
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0xfe82ac4e7cc0488664192fb4b7b2d5d3a472c90d",
+      "user_profile_id": 1051322,
+      "user_category": 4,
+      "user_category_name": "NFT Trader/Collector",
+      "end_user_likelihood": 0.56,
+      "confidence": 0.76,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 5,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.8,
+        "high_slippage_tolerance": 0.61
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+      "user_profile_id": 4255429,
+      "user_category": 4,
+      "user_category_name": "NFT Trader/Collector",
+      "end_user_likelihood": 0.75,
+      "confidence": 0.75,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 2,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.77
+      }
+    },
+    {
+      "address": "0xf94e86500b2410399bbeb4d6bb9944131ebffc64",
+      "user_profile_id": 6388015,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.92,
+      "confidence": 0.92,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 4,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.6
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0xf36a830bcafd532a54ae5a0303e0d29ef7de074e",
+      "user_profile_id": 31032,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.8,
+      "confidence": 0.86,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 5,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.53
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0xe37f7c80ced04c4f243c0fd04a5510d663cb88b5",
+      "user_profile_id": 7024604,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.76,
+      "confidence": 0.83,
+      "is_anomaly": false,
+      "cluster_id": -1,
+      "total_transactions": 26,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.43
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0xe8832a868c091263ed190a9f4be304a03895dd91",
+      "user_profile_id": 6456661,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "end_user_likelihood": 0.07,
+      "confidence": 0.27,
+      "is_anomaly": true,
+      "cluster_id": -1,
+      "total_transactions": 9743,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "suspicious_patterns": [
+        "high_velocity_small_amounts",
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x45fdc35c5a99179bf93dbf7a0712b6d5e8d1f3f8",
+      "user_profile_id": 109263,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.72,
+      "confidence": 0.77,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 9,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.72
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x6d6a396293a753ff22d804382cfe4f7c731c94cf",
+      "user_profile_id": 7041078,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "end_user_likelihood": 0.62,
+      "confidence": 0.86,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 9,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.59,
+        "high_slippage_tolerance": 0.57
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x91c8a7e5f6ab8d664b5afba88212a9f6ab2cb61b",
+      "user_profile_id": 3894872,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.74,
+      "confidence": 0.86,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 22,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.63
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0xc69e5b9bdd0d38aea8af0f0c07db25f27e95948e",
+      "user_profile_id": 2811269,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.92,
+      "confidence": 0.94,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 3,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.71
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x1b988a9bf09a452bf60c139a116580cbcb84bdfb",
+      "user_profile_id": 2138160,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "end_user_likelihood": 0.55,
+      "confidence": 0.75,
+      "is_anomaly": false,
+      "cluster_id": -1,
+      "total_transactions": 32,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.57
+      },
+      "suspicious_patterns": [
+        "wash_trading"
+      ]
+    },
+    {
+      "address": "0x264bd8291fae1d75db2c5f573b07faa6715997b5",
+      "user_profile_id": 1004100,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.84,
+      "confidence": 0.86,
+      "is_anomaly": false,
+      "cluster_id": -1,
+      "total_transactions": 0,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      }
+    },
+    {
+      "address": "0x8900d107b919632aeeec08c2b55fa2a61cfd7a11",
+      "user_profile_id": 3770630,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "end_user_likelihood": 0.83,
+      "confidence": 0.9,
+      "is_anomaly": false,
+      "cluster_id": 0,
+      "total_transactions": 0,
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      }
+    }
+  ],
+  "documentation": {
+    "user_categories": {
+      "0": {
+        "name": "Individual/Retail User",
+        "description": "Regular person using crypto occasionally"
+      },
+      "1": {
+        "name": "Institutional/Large Investor",
+        "description": "Organizations with high-value transactions"
+      },
+      "2": {
+        "name": "Exchange/Protocol Account",
+        "description": "Exchange wallets or protocol contracts"
+      },
+      "3": {
+        "name": "DeFi User",
+        "description": "Users actively engaging with decentralized finance"
+      },
+      "4": {
+        "name": "NFT Trader/Collector",
+        "description": "Users primarily trading/collecting NFTs"
+      }
+    },
+    "confidence_metrics": {
+      "confidence": "How certain the model is about its categorization (0.0-1.0). Values around 0.60 are typical for addresses with limited transaction data. Higher values (0.80+) indicate strong evidence for the classification.",
+      "confidence_factors": {
+        "model_confidence": "Raw ML model prediction confidence",
+        "evidence_adjustment": "Evidence-based adjustments to raw confidence"
+      }
+    },
+    "end_user_likelihood": "Probability the address belongs to an individual (0.0-1.0). 0.70-1.00: HIGH likelihood of being an end user; 0.40-0.70: MEDIUM likelihood; 0.00-0.40: LOW likelihood (likely institutional/contract)",
+    "anomaly_detection": {
+      "is_anomaly": "Whether address shows unusual transaction patterns (true/false)",
+      "anomaly_score": "The degree of abnormality (higher = more unusual)"
+    },
+    "investments": "List of protocols/platforms the address has interacted with. Values indicate estimated proportion of portfolio.",
+    "transaction_patterns": {
+      "total_transactions": "Number of transactions for this address",
+      "unique_counterparties": "Number of unique addresses interacted with",
+      "cluster_id": "Which cluster the address belongs to. -1: Outlier (unique pattern); 0,1,2...: Specific cluster assignments",
+      "cluster_explanation": "Human-readable description of the cluster"
+    },
+    "graph_metrics": {
+      "pagerank": "Importance of address in the network (0.0-1.0). Higher values indicate more central/influential addresses",
+      "clustering_coefficient": "How connected the address's neighbors are (0.0-1.0). 0.00: Neighbors don't transact with each other; 1.00: All neighbors transact with each other",
+      "betweenness_centrality": "How often this address acts as a bridge. Higher values indicate the address connects different parts of the network"
+    },
+    "behavior_patterns": {
+      "gas_optimization": "Evidence of waiting for low gas prices (0.0-1.0)",
+      "high_slippage_tolerance": "Evidence of accepting high slippage (0.0-1.0)",
+      "weekend_trading": "Evidence of weekend activity (typical for retail) (0.0-1.0)",
+      "small_token_diversity": "Evidence of holding few token types (0.0-1.0)",
+      "fiat_on_off_ramps": "Evidence of using exchanges for fiat conversion (0.0-1.0)"
+    },
+    "temporal_patterns": {
+      "weekend_ratio": "Proportion of activity on weekends (0.0-1.0). 0.00: No weekend activity; 1.00: Only weekend activity",
+      "working_hours_ratio": "Proportion of activity during 9AM-5PM (0.0-1.0)",
+      "tx_time_entropy": "Randomness of transaction timing. Lower values indicate more predictable patterns"
+    },
+    "automated_behavior": {
+      "high_frequency_trading": "Evidence of bot-like trading frequency (0.0-1.0)",
+      "regular_intervals": "Evidence of transactions at fixed intervals (0.0-1.0)",
+      "bursty_activity": "Evidence of bursts of activity followed by quiet (0.0-1.0)"
+    },
+    "suspicious_activities": {
+      "high_velocity_small_amounts": "Rapid small transactions (potential washing)",
+      "tornado_cash_interaction": "Interactions with privacy mixers",
+      "wash_trading": "Trading same assets back and forth",
+      "chain_hopping": "Moving across multiple chains",
+      "dormant_reactivation": "Sudden activity after long dormancy"
+    },
+    "note": "The 0.00 values are normal for addresses with limited transactions, as many metrics need multiple interactions to calculate meaningful values."
+  },
+  "analyzed_users": [
+    {
+      "address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+      "is_anomaly": false,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "confidence": 0.29,
+      "anomaly_score": 0.792711762080827,
+      "confidence_factors": {
+        "model_confidence": 0.88,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "high_velocity_small_amounts",
+          "confidence": 0.8,
+          "description": "High volume of transactions detected, possibly automated trading or suspicious activity"
+        },
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 7179,
+        "unique_counterparties": 7179,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.0001392757660167131,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.09,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "user_profile_id": 9864255
+    },
+    {
+      "address": "0x8c8e631502c2314ea34541ca0b6e06c692a76c73",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.74,
+      "anomaly_score": 0.780606082644819,
+      "confidence_factors": {
+        "model_confidence": 0.64,
+        "evidence_adjustment": 0.89
+      },
+      "investments": {
+        "Gate.io": 0.5,
+        "Kraken": 0.5
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 34,
+        "unique_counterparties": 33,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.030303030303030304,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.71,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "fiat_on_off_ramps": 0.7,
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.65
+      },
+      "user_profile_id": 5218090
+    },
+    {
+      "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+      "is_anomaly": false,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "confidence": 0.35,
+      "anomaly_score": 0.7128763282815362,
+      "confidence_factors": {
+        "model_confidence": 0.76,
+        "evidence_adjustment": 0.91
+      },
+      "investments": {
+        "WETH": 1.0
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 83,
+        "unique_counterparties": 83,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.011904761904761904,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.15,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "user_profile_id": 3541313
+    },
+    {
+      "address": "0x08d64d365bf7bf47869e0e5e95ef07bfeba6152a",
+      "is_anomaly": false,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "confidence": 0.35,
+      "anomaly_score": 0.7892947673147982,
+      "confidence_factors": {
+        "model_confidence": 0.74,
+        "evidence_adjustment": 0.93
+      },
+      "investments": {
+        "USDC": 0.11111111111111113,
+        "USDT": 0.11111111111111113,
+        "DAI": 0.11111111111111113,
+        "WETH": 0.11111111111111113,
+        "Uniswap Router": 0.11111111111111113,
+        "OpenSea": 0.11111111111111113,
+        "1inch": 0.11111111111111113,
+        "WBTC": 0.11111111111111113,
+        "Aave Lending Pool": 0.11111111111111113
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "high_velocity_small_amounts",
+          "confidence": 0.113,
+          "description": "High volume of transactions detected, possibly automated trading or suspicious activity"
+        },
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 113,
+        "unique_counterparties": 112,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.008928571428571428,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.15,
+      "automated_behavior": {},
+      "behavior_patterns": {},
+      "user_profile_id": 6241520
+    },
+    {
+      "address": "0xcaf743899ef72c0bad4148e3a7fcb53b0f70e5b1",
+      "is_anomaly": false,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "confidence": 0.8,
+      "anomaly_score": 0.6759102517801845,
+      "confidence_factors": {
+        "model_confidence": 0.9,
+        "evidence_adjustment": 0.97
+      },
+      "investments": {
+        "Uniswap Router": 1.0
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 13,
+        "unique_counterparties": 13,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.07142857142857142,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.6,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.57,
+        "high_slippage_tolerance": 0.58
+      },
+      "user_profile_id": 7835918
+    },
+    {
+      "address": "0x012b0b539007d424510441e69c6cf6641bf7afed",
+      "is_anomaly": false,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "confidence": 0.79,
+      "anomaly_score": 0.7183559935037224,
+      "confidence_factors": {
+        "model_confidence": 0.8,
+        "evidence_adjustment": 0.95
+      },
+      "investments": {
+        "USDC": 0.5,
+        "Aave Lending Pool": 0.5
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 10,
+        "unique_counterparties": 10,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.09090909090909091,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.59,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.46,
+        "high_slippage_tolerance": 0.6
+      },
+      "user_profile_id": 4565535
+    },
+    {
+      "address": "0x59f5ddaa20f94c9dbc1719897a810194a91cae30",
+      "is_anomaly": false,
+      "user_category": 4,
+      "user_category_name": "NFT Trader/Collector",
+      "confidence": 0.86,
+      "anomaly_score": 0.709428939053607,
+      "confidence_factors": {
+        "model_confidence": 0.8,
+        "evidence_adjustment": 0.95
+      },
+      "investments": {
+        "OpenSea": 1.0
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 4,
+        "unique_counterparties": 4,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.2,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.72,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.55,
+        "high_slippage_tolerance": 0.62
+      },
+      "user_profile_id": 7270958
+    },
+    {
+      "address": "0xfe82ac4e7cc0488664192fb4b7b2d5d3a472c90d",
+      "is_anomaly": false,
+      "user_category": 4,
+      "user_category_name": "NFT Trader/Collector",
+      "confidence": 0.76,
+      "anomaly_score": 0.7073227257331938,
+      "confidence_factors": {
+        "model_confidence": 0.88,
+        "evidence_adjustment": 0.95
+      },
+      "investments": {
+        "X2Y2": 1.0
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 5,
+        "unique_counterparties": 5,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.16666666666666666,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.56,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.8,
+        "high_slippage_tolerance": 0.61
+      },
+      "user_profile_id": 1051322
+    },
+    {
+      "address": "0x242ce72c5572e1d74b83cb66825b232ec37761e5",
+      "is_anomaly": false,
+      "user_category": 4,
+      "user_category_name": "NFT Trader/Collector",
+      "confidence": 0.75,
+      "anomaly_score": 0.7297115496656768,
+      "confidence_factors": {
+        "model_confidence": 0.68,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {
+        "OpenSea": 1.0
+      },
+      "suspicious_activities": [],
+      "transaction_patterns": {
+        "total_transactions": 2,
+        "unique_counterparties": 2,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.3333333333333333,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.75,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.77
+      },
+      "user_profile_id": 4255429
+    },
+    {
+      "address": "0xf94e86500b2410399bbeb4d6bb9944131ebffc64",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.92,
+      "anomaly_score": 0.6590177310288522,
+      "confidence_factors": {
+        "model_confidence": 0.96,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 4,
+        "unique_counterparties": 4,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.2,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.92,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.6
+      },
+      "user_profile_id": 6388015
+    },
+    {
+      "address": "0xf36a830bcafd532a54ae5a0303e0d29ef7de074e",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.86,
+      "anomaly_score": 0.6591805219410044,
+      "confidence_factors": {
+        "model_confidence": 0.86,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 5,
+        "unique_counterparties": 5,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.16666666666666666,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.8,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.53
+      },
+      "user_profile_id": 31032
+    },
+    {
+      "address": "0xe37f7c80ced04c4f243c0fd04a5510d663cb88b5",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.83,
+      "anomaly_score": 0.692285250676572,
+      "confidence_factors": {
+        "model_confidence": 0.86,
+        "evidence_adjustment": 0.79
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 26,
+        "unique_counterparties": 25,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.04,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.76,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.43
+      },
+      "user_profile_id": 7024604
+    },
+    {
+      "address": "0xe8832a868c091263ed190a9f4be304a03895dd91",
+      "is_anomaly": true,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "confidence": 0.27,
+      "anomaly_score": 0.8190468229194166,
+      "confidence_factors": {
+        "model_confidence": 0.88,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "high_velocity_small_amounts",
+          "confidence": 0.8,
+          "description": "High volume of transactions detected, possibly automated trading or suspicious activity"
+        },
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 9743,
+        "unique_counterparties": 9743,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.00010262725779967159,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.07,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "user_profile_id": 6456661
+    },
+    {
+      "address": "0x45fdc35c5a99179bf93dbf7a0712b6d5e8d1f3f8",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.77,
+      "anomaly_score": 0.6613549053192841,
+      "confidence_factors": {
+        "model_confidence": 0.72,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 9,
+        "unique_counterparties": 9,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.1,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.72,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.72
+      },
+      "user_profile_id": 109263
+    },
+    {
+      "address": "0x6d6a396293a753ff22d804382cfe4f7c731c94cf",
+      "is_anomaly": false,
+      "user_category": 3,
+      "user_category_name": "DeFi User",
+      "confidence": 0.86,
+      "anomaly_score": 0.6838101653521592,
+      "confidence_factors": {
+        "model_confidence": 0.8,
+        "evidence_adjustment": 0.95
+      },
+      "investments": {
+        "USDT": 1.0
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 9,
+        "unique_counterparties": 9,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.1,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.62,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.59,
+        "high_slippage_tolerance": 0.57
+      },
+      "user_profile_id": 7041078
+    },
+    {
+      "address": "0x91c8a7e5f6ab8d664b5afba88212a9f6ab2cb61b",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.86,
+      "anomaly_score": 0.6722433589876038,
+      "confidence_factors": {
+        "model_confidence": 0.86,
+        "evidence_adjustment": 0.87
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 22,
+        "unique_counterparties": 22,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.043478260869565216,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.74,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.63
+      },
+      "user_profile_id": 3894872
+    },
+    {
+      "address": "0xc69e5b9bdd0d38aea8af0f0c07db25f27e95948e",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.94,
+      "anomaly_score": 0.6590177310288522,
+      "confidence_factors": {
+        "model_confidence": 1.0,
+        "evidence_adjustment": 0.85
+      },
+      "investments": {},
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 3,
+        "unique_counterparties": 3,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.25,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.92,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.71
+      },
+      "user_profile_id": 2811269
+    },
+    {
+      "address": "0x1b988a9bf09a452bf60c139a116580cbcb84bdfb",
+      "is_anomaly": false,
+      "user_category": 2,
+      "user_category_name": "Exchange/Protocol Account",
+      "confidence": 0.75,
+      "anomaly_score": 0.7068026813370045,
+      "confidence_factors": {
+        "model_confidence": 0.66,
+        "evidence_adjustment": 0.89
+      },
+      "investments": {
+        "1inch": 0.5,
+        "USDC": 0.25,
+        "DAI": 0.25
+      },
+      "suspicious_activities": [
+        {
+          "pattern": "wash_trading",
+          "confidence": 0.7,
+          "description": "Potential wash trading detected, trading with the same addresses repeatedly"
+        }
+      ],
+      "transaction_patterns": {
+        "total_transactions": 32,
+        "unique_counterparties": 31,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0.03225806451612903,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.55,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85,
+        "gas_optimization": 0.57
+      },
+      "user_profile_id": 2138160
+    },
+    {
+      "address": "0x264bd8291fae1d75db2c5f573b07faa6715997b5",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.86,
+      "anomaly_score": 0.7618938402359666,
+      "confidence_factors": {
+        "model_confidence": 1.0,
+        "evidence_adjustment": 0.65
+      },
+      "investments": {},
+      "suspicious_activities": [],
+      "transaction_patterns": {
+        "total_transactions": 0,
+        "unique_counterparties": 0,
+        "cluster_id": -1,
+        "cluster_explanation": "Outlier/Unclustered (This address has unique transaction patterns that don't match any cluster)"
+      },
+      "graph_metrics": {
+        "pagerank": 0,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.84,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "user_profile_id": 1004100
+    },
+    {
+      "address": "0x8900d107b919632aeeec08c2b55fa2a61cfd7a11",
+      "is_anomaly": false,
+      "user_category": 0,
+      "user_category_name": "Individual/Retail User",
+      "confidence": 0.9,
+      "anomaly_score": 0.754272226584991,
+      "confidence_factors": {
+        "model_confidence": 1.0,
+        "evidence_adjustment": 0.75
+      },
+      "investments": {},
+      "suspicious_activities": [],
+      "transaction_patterns": {
+        "total_transactions": 0,
+        "unique_counterparties": 0,
+        "cluster_id": 0,
+        "cluster_explanation": "Primary Activity Cluster (High transaction volume with diverse counterparties)"
+      },
+      "graph_metrics": {
+        "pagerank": 0,
+        "clustering_coefficient": 0,
+        "betweenness_centrality": 0
+      },
+      "end_user_likelihood": 0.83,
+      "automated_behavior": {},
+      "behavior_patterns": {
+        "small_token_diversity": 0.85
+      },
+      "user_profile_id": 3770630
+    }
+  ]
+}

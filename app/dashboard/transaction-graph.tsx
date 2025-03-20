@@ -31,19 +31,21 @@ interface GraphData {
 
 // Map user categories to colors
 const NODE_COLORS = {
-  1: "rgba(99, 102, 241, 0.8)", // Indigo - Individual/Retail User
-  2: "rgba(139, 92, 246, 0.8)",  // Purple - Trader
-  3: "rgba(45, 212, 191, 0.8)", // Teal - Business
-  4: "rgba(34, 211, 238, 0.8)", // Cyan - Developer
+  0: "rgba(99, 102, 241, 0.8)", // Indigo - Individual/Retail User
+  1: "rgba(236, 72, 153, 0.8)", // Pink - Institutional/Large Investor
+  2: "rgba(139, 92, 246, 0.8)", // Purple - Exchange/Protocol Account
+  3: "rgba(45, 212, 191, 0.8)", // Teal - DeFi User
+  4: "rgba(34, 211, 238, 0.8)", // Cyan - NFT Trader/Collector
   "default": "rgba(156, 163, 175, 0.8)", // Gray - Unknown/Other
 }
 
 // Map user categories to labels
 const NODE_LABELS = {
-  1: "Individual",
-  2: "Trader",
-  3: "Business",
-  4: "Developer",
+  0: "Individual/Retail User",
+  1: "Institutional/Large Investor",
+  2: "Exchange/Protocol Account",
+  3: "DeFi User",
+  4: "NFT Trader/Collector",
   "default": "Unknown"
 }
 
@@ -56,28 +58,24 @@ export function TransactionGraph() {
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true)
       try {
-        // Fetch from API
+        // Fetch analysis results
         const response = await fetch('/api/results')
         if (!response.ok) {
-          console.error("Error fetching results:", await response.text())
-          setIsLoading(false)
-          return
+          throw new Error(`Error fetching data: ${response.statusText}`)
         }
         
-        // Get all results (array)
         const allResults = await response.json()
         
         // Use the most recent result (last item in array)
-        const results = allResults[allResults.length - 1]
+        const latestResult = allResults[allResults.length - 1]
         
-        // Generate graph data from analysis results
-        const data = generateGraphData(results)
-        setGraphData(data)
+        // Generate graph data from the results
+        const graphData = generateGraphData(latestResult)
+        setGraphData(graphData)
+        setIsLoading(false)
       } catch (error) {
-        console.error("Error processing graph data:", error)
-      } finally {
+        console.error("Error fetching data:", error)
         setIsLoading(false)
       }
     }
@@ -85,92 +83,152 @@ export function TransactionGraph() {
     fetchData()
   }, [])
   
-  // Generate graph data from analysis results
+  // Generate the graph data from the API response
   const generateGraphData = (results: any): GraphData => {
-    const nodes: Node[] = []
-    const links: Link[] = []
-    const addressMap: Record<string, boolean> = {}
-    
-    // Only include if we have event outputs
-    if (!results.event_outputs || !Array.isArray(results.event_outputs)) {
-      return { nodes, links }
+    if (!results || !results.visualization_data) {
+      return { nodes: [], links: [] }
     }
-    
-    // Add nodes from event outputs
-    results.event_outputs.forEach((user: any) => {
-      if (!user.address) return
-      
-      // Skip duplicates
-      if (addressMap[user.address]) return
-      addressMap[user.address] = true
-      
-      // Add node
-      nodes.push({
-        id: user.address,
-        group: user.user_category || 1,
-        value: Math.max(10, user.end_user_likelihood * 40), // Size based on likelihood
-        label: NODE_LABELS[user.user_category as keyof typeof NODE_LABELS] || NODE_LABELS.default,
-        is_end_user: user.end_user_likelihood > 0.7,
-        cluster_id: user.cluster_id,
-        likelihood: user.end_user_likelihood
-      })
-    })
-    
-    // Generate links between nodes in the same cluster
-    const clusterMap: Record<string, string[]> = {}
-    
-    // Group addresses by cluster
-    nodes.forEach(node => {
-      if (node.cluster_id === undefined) return
-      
-      const clusterId = String(node.cluster_id)
-      if (!clusterMap[clusterId]) {
-        clusterMap[clusterId] = []
-      }
-      clusterMap[clusterId].push(node.id)
-    })
-    
-    // Generate links between nodes in the same cluster
-    Object.values(clusterMap).forEach(addresses => {
-      // Skip clusters with only one address
-      if (addresses.length <= 1) return
-      
-      // Create a "star" topology for each cluster
-      // Use the first address as the hub
-      const hub = addresses[0]
-      
-      addresses.slice(1).forEach(address => {
-        links.push({
-          source: hub,
-          target: address,
-          value: 3 // Fixed value for cluster links
-        })
-      })
-      
-      // Add some additional links between random cluster members
-      if (addresses.length > 5) {
-        for (let i = 0; i < Math.min(addresses.length, 5); i++) {
-          const source = addresses[Math.floor(Math.random() * addresses.length)]
-          const target = addresses[Math.floor(Math.random() * addresses.length)]
+
+    const { visualization_data } = results
+
+    // Use the visualization_data directly if it exists
+    if (visualization_data.nodes && visualization_data.links) {
+      try {
+        // If there are too many nodes, select a sample of the most significant ones
+        let formattedNodes = []
+        
+        // For large datasets, prioritize by value (transaction count)
+        // but limit to a reasonable number for performance
+        const maxNodes = 120 // Increase from default (which was likely 50)
+        let nodesToUse = visualization_data.nodes
+        
+        if (visualization_data.nodes.length > maxNodes) {
+          // Sort by value (typically transaction count) and take the top ones
+          nodesToUse = [...visualization_data.nodes]
+            .sort((a, b) => (b.value || 1) - (a.value || 1))
+            .slice(0, maxNodes)
           
-          // Skip self-links and duplicates
-          if (source === target) continue
-          if (links.some(link => 
-            (link.source === source && link.target === target) || 
-            (link.source === target && link.target === source))) {
-            continue
-          }
+          console.log(`Limited visualization from ${visualization_data.nodes.length} to ${maxNodes} nodes for performance`)
+        }
+        
+        // Ensure nodes have the proper format
+        formattedNodes = nodesToUse.map((node: any) => ({
+          id: node.id || `node-${Math.random().toString(36).slice(2,8)}`,
+          group: typeof node.group === 'number' ? node.group : 0,
+          value: typeof node.value === 'number' ? node.value : 1,
+          label: node.label || "Unknown"
+        }))
+
+        // Ensure links have the proper format and reference existing nodes
+        const nodeIds = new Set(formattedNodes.map(node => node.id))
+        const formattedLinks = visualization_data.links
+          .filter((link: any) => 
+            link.source && 
+            link.target && 
+            nodeIds.has(typeof link.source === 'object' ? link.source.id : link.source) && 
+            nodeIds.has(typeof link.target === 'object' ? link.target.id : link.target)
+          )
+          .map((link: any) => ({
+            source: typeof link.source === 'object' ? link.source.id : link.source,
+            target: typeof link.target === 'object' ? link.target.id : link.target,
+            value: typeof link.value === 'number' ? link.value : 1
+          }))
+
+        // If we don't have enough links, generate additional ones based on cluster memberships
+        if (formattedLinks.length < formattedNodes.length / 2) {
+          console.log("Not enough links in visualization data, enhancing connectivity...")
           
-          links.push({
-            source,
-            target,
-            value: 2
+          // Group nodes by their cluster/group
+          const nodesByGroup = formattedNodes.reduce((groups: {[key: string]: Node[]}, node) => {
+            const groupId = String(node.group || 0)
+            if (!groups[groupId]) groups[groupId] = []
+            groups[groupId].push(node)
+            return groups
+          }, {})
+          
+          // For each group with multiple nodes, create links between them
+          Object.values(nodesByGroup).forEach(groupNodes => {
+            if (groupNodes.length <= 1) return
+            
+            // Create a "star" topology within each group
+            // Pick a central node (highest value)
+            const centralNode = [...groupNodes].sort((a, b) => (b.value || 0) - (a.value || 0))[0]
+            
+            // Connect other nodes to the central node
+            groupNodes
+              .filter(node => node.id !== centralNode.id)
+              .forEach(node => {
+                formattedLinks.push({
+                  source: centralNode.id,
+                  target: node.id,
+                  value: 2
+                })
+                
+                // Add some additional connections for larger groups
+                if (groupNodes.length >= 5 && Math.random() > 0.7) {
+                  // Connect to another random node in the same group
+                  const otherNode = groupNodes[Math.floor(Math.random() * groupNodes.length)]
+                  if (otherNode.id !== node.id && otherNode.id !== centralNode.id) {
+                    formattedLinks.push({
+                      source: node.id,
+                      target: otherNode.id,
+                      value: 1
+                    })
+                  }
+                }
+              })
           })
         }
+
+        return {
+          nodes: formattedNodes,
+          links: formattedLinks
+        }
+      } catch (error) {
+        console.error("Error formatting visualization data:", error)
+        // Fall through to the cluster-based visualization fallback
+      }
+    }
+
+    // Fallback to a simple graph derived from clusters if visualization_data is not properly formatted
+    if (results.clusters) {
+      const nodes: Node[] = []
+      const links: Link[] = []
+      
+      // Create a central hub node for each cluster
+      results.clusters.forEach((cluster: any) => {
+        if (cluster.id !== "-1") { // Skip outlier cluster
+          // Add central node for the cluster
+          nodes.push({
+            id: `cluster-${cluster.id}`,
+            group: 0,
+            value: cluster.size || 1,
+            label: `Cluster ${cluster.id}`
+          })
+          
+          // Add nodes for each address
+          cluster.addresses.forEach((address: string) => {
+            nodes.push({
+              id: address,
+              group: parseInt(cluster.id) || 1,
+              value: 1,
+              label: "Address"
+            })
+            
+            // Link to cluster center
+          links.push({
+              source: address,
+              target: `cluster-${cluster.id}`,
+              value: 1
+            })
+          })
       }
     })
     
     return { nodes, links }
+    }
+    
+    return { nodes: [], links: [] }
   }
 
   // Render graph once data is available
