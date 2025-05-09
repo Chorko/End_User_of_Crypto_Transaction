@@ -88,8 +88,8 @@ source venv/bin/activate
 #### Clone or Download the Project
 If using Git:
 ```
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/Chorko/End_User_of_Crypto_Transaction.git
+cd End_User_of_Crypto_Transaction
 ```
 
 Or simply download and extract the ZIP file to a folder.
