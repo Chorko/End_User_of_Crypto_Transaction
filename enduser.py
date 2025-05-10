@@ -1997,7 +1997,7 @@ def save_results(analyzed_users, clusters, category_distribution):
             converted_users.append(converted_user)
 
         # Prepare data for JSON
-        data = {
+        new_data = {
             "timestamp": datetime.now().isoformat(),
             "total_addresses": len(analyzed_users),
             "clusters": cluster_data,
@@ -2011,18 +2011,41 @@ def save_results(analyzed_users, clusters, category_distribution):
             "analyzed_users": converted_users  # Include full user analysis data with proper Python types
         }
 
-        # Save timestamped file
+        # Define the all_results file path
+        all_results_file = os.path.join(results_dir, "all_results.json")
+        
+        # Load existing data if file exists, or create empty list
+        existing_data = []
+        if os.path.exists(all_results_file):
+            try:
+                with open(all_results_file, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                    if not isinstance(existing_data, list):
+                        existing_data = [existing_data]
+            except json.JSONDecodeError:
+                print(f"Error reading existing data file {all_results_file}. Creating new file.")
+                existing_data = []
+        
+        # Append new data
+        existing_data.append(new_data)
+        
+        # Write to all_results.json
+        with open(all_results_file, "w", encoding="utf-8") as f:
+            json.dump(existing_data, f, indent=2, ensure_ascii=False)
+        
+        # Save latest.json for backwards compatibility
+        latest_file = os.path.join(results_dir, "latest.json")
+        with open(latest_file, "w", encoding="utf-8") as f:
+            json.dump(new_data, f, indent=2, ensure_ascii=False)
+        
+        # Also save timestamped file for backup purposes
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = os.path.join(results_dir, f"results_{timestamp}.json")
         with open(filename, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(new_data, f, indent=2, ensure_ascii=False)
 
-        # Save latest.json
-        latest_file = os.path.join(results_dir, "latest.json")
-        with open(latest_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-
-        print(f"\nResults saved to {filename} and {latest_file}")
+        print(f"\nResults appended to {all_results_file}")
+        print(f"Also saved to {filename} and {latest_file}")
         return True
 
     except Exception as e:
