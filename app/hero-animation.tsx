@@ -63,6 +63,8 @@ export function HeroAnimation() {
 
       update() {
         // Simple boundary checking
+        if (!canvas) return;
+        
         if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
           this.vx = -this.vx
         }
@@ -82,6 +84,7 @@ export function HeroAnimation() {
 
     for (let i = 0; i < nodeCount; i++) {
       const radius = Math.random() * 3 + 2
+      if (!canvas) return;
       const x = Math.random() * (canvas.width - radius * 2) + radius
       const y = Math.random() * (canvas.height - radius * 2) + radius
 
@@ -109,6 +112,7 @@ export function HeroAnimation() {
 
     // Animation loop
     const animate = () => {
+      if (!canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       // Draw and update nodes

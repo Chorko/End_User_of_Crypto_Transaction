@@ -6,7 +6,6 @@ import { motion } from "framer-motion"
 import { ZoomIn, ZoomOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { mockAnalysisResults } from "./mock-data"
 
 // Define our data types
 interface Node {
@@ -59,19 +58,19 @@ export function TransactionGraph() {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        // Try to fetch from API
-        let results;
-        try {
-          const response = await fetch('/api/results')
-          if (response.ok) {
-            results = await response.json()
-          } else {
-            results = mockAnalysisResults
-          }
-        } catch (error) {
-          console.error("Error fetching results:", error)
-          results = mockAnalysisResults
+        // Fetch from API
+        const response = await fetch('/api/results')
+        if (!response.ok) {
+          console.error("Error fetching results:", await response.text())
+          setIsLoading(false)
+          return
         }
+        
+        // Get all results (array)
+        const allResults = await response.json()
+        
+        // Use the most recent result (last item in array)
+        const results = allResults[allResults.length - 1]
         
         // Generate graph data from analysis results
         const data = generateGraphData(results)
